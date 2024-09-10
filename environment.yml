@@ -1,6 +1,8 @@
-name: streamlit-env
+name: team4_env
 channels:
   - conda-forge
 dependencies:
-  - python=3.9
-  - streamlit
+  - python=3.11
+  - pip
+  - pip:
+    - streamlit
