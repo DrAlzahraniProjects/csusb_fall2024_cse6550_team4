@@ -1,5 +1,7 @@
-# Use a specific version of Ubuntu as a base image
-FROM ubuntu:22.04
+# # Use a specific version of Ubuntu as a base image
+# FROM ubuntu:22.04
+# Use Python as the base image
+FROM python:3.11-slim
 
 # Set environment variables to avoid interactive prompts and optimize Python behavior
 ENV DEBIAN_FRONTEND=noninteractive
