@@ -29,4 +29,4 @@ Step 4: Run the Docker Container
 docker run -p 5004:5004 team4-app
 ```
 
-You can access the application at: [http://127.0.0.1:8501/](http://127.0.0.1:8501/) or [http://localhost:8501/](http://localhost:8501/)
+You can access the application at: http://127.0.0.1:5004/ or http://localhost:5004/
