@@ -21,7 +21,7 @@ cd csusb_fall2024_cse6550_team4
 
 Step 3: Use the below command to build the Docker image
 ```
-docker build -t mypythonfirstprogram
+docker build -t mypythonfirstprogram .
 ```
 
 Step 4: Run the Docker Container
