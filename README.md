@@ -29,4 +29,4 @@ Step 4: Run the Docker Container
 docker run -p 8501:8501 researchpaperbot
 ```
 
-You can access the application at: [http://127.0.0.1:5004/](http://127.0.0.1:5004/) or [http://localhost:8501/](http://localhost:8501/)
+You can access the application at: [http://127.0.0.1:8501/](http://127.0.0.1:8501/) or [http://localhost:8501/](http://localhost:8501/)
