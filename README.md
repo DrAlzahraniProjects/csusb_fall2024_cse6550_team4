@@ -1,4 +1,4 @@
-# ICSE '24: Proceedings chatbot
+# Research paper chatbot
 CSE 6550: Software Engineer Concepts, Fall 24
 
 California State University, San Bernardino
@@ -21,12 +21,12 @@ cd csusb_fall2024_cse6550_team4
 
 Step 3: Use the below command to build the Docker image
 ```
-docker build -t mypythonfirstprogram .
+docker build -t researchpaperbot .
 ```
 
 Step 4: Run the Docker Container
 ```
-docker run -p 8501:8501 myfirstprogram
+docker run -p 8501:8501 researchpaperbot
 ```
 
-You can access the application at: [http://127.0.0.1:5004/](http://127.0.0.1:5004/) or [http://localhost:5004/](http://localhost:5004/)
+You can access the application at: [http://127.0.0.1:5004/](http://127.0.0.1:5004/) or [http://localhost:8501/](http://localhost:8501/)
