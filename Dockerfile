@@ -41,4 +41,4 @@ COPY app.py /app/
 EXPOSE 5004
 
 # Default command to run the Streamlit application
-CMD ["mamba", "run", "-n", "team4_env", "streamlit", "run", "app.py", "--server.port=8501"]
+CMD ["mamba", "run", "-n", "team4_env", "streamlit", "run", "app.py", "--server.port=5004"]
