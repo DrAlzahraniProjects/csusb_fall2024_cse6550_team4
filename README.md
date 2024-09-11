@@ -26,7 +26,7 @@ docker build -t mypythonfirstprogram .
 
 Step 4: Run the Docker Container
 ```
-docker run -p 8501:8501 myfirstprogram
+docker run -p 8501:8501 mypythonfirstprogram
 ```
 
-You can access the application at: [http://127.0.0.1:5004/](http://127.0.0.1:5004/) or [http://localhost:5004/](http://localhost:5004/)
+You can access the application at: [http://127.0.0.1:5004/](http://127.0.0.1:5004/) or [http://localhost:8501/](http://localhost:8501/)
