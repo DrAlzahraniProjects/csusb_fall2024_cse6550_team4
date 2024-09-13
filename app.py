@@ -21,21 +21,10 @@ def index():
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port="5004", debug=True)"""
 
-from flask import Flask, Response
+import streamlit as st
 
-app = Flask(__name__)
-
-def generate():
-    yield '<html><head><title>Home Page</title></head><body>'
-    yield '<h2 align="center"><strong>Hello team 4</strong></h2>'
-    yield '</body></html>'
-
-@app.route('/')
-def index():
-    return Response(generate(), content_type='text/html')
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5004, debug=True)
+# Title of the app
+st.title('Hello Streamlit!')
 
 
 
