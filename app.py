@@ -3,7 +3,7 @@ import os
 import subprocess
 
 def main():
-    """Main Streamlit app logic."""
+    """Main Streamlit app logic. """
     st.title("Hello from Team 4")
     
 if __name__ == "__main__":

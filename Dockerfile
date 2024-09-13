@@ -1,7 +1,7 @@
 # Use Python 3.11 slim as the base image
 FROM python:3.11-slim
 
-# Install system dependencies  (if needed)
+# Install system dependencies   (if needed)
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
