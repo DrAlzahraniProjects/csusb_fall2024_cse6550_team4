@@ -26,7 +26,7 @@ docker build -t team4-app .
 
 Step 4: Run the Docker Container
 ```
-docker run -p 5004:5004 team4-app
+docker run -d -p 5004:5004 team4-app
 ```
 
 You can access the application at: http://127.0.0.1:5004/ or http://localhost:5004/
