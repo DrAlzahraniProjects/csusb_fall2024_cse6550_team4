@@ -1,17 +1,22 @@
-#import streamlit as st
+import streamlit as st
+import os
+import subprocess
 
-#st.title('Hello World - Team 4')
-from flask import Flask
-
-app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return '<h2 align = "center">Hello team 4</h2>'
-
-
+def main():
+    """Main Streamlit app logic."""
+    st.title("Hello from Team 4")
+    
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="5004", debug=True)
+    # If not already running in a Streamlit subprocess, start one
+    if not os.getenv('STREAMLIT_RUNNING'):
+        os.environ['STREAMLIT_RUNNING'] = '1'
+        subprocess.run(["streamlit", "run", __file__, "--server.port=5004"])
+    else:
+        main()
+
+
+
+
 
 
 
