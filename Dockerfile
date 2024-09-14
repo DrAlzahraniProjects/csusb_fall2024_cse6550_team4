@@ -50,7 +50,7 @@ RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 COPY . /app
 
 # Make port 5003 available to the world outside this container
-EXPOSE 5003
+EXPOSE 5004
 
 # Add the conda environment's bin directory to PATH
 ENV PATH=/opt/mambaforge/envs/team4_env/bin:$PATH
