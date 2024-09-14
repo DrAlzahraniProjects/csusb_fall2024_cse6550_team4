@@ -49,7 +49,7 @@ RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-# Make port 5004 available to the world outside this container
+# Make port 5004 available
 EXPOSE 5004
 
 # Add the conda environment's bin directory to PATH
