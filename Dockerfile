@@ -38,7 +38,7 @@ ENV PATH=/opt/mambaforge/bin:$PATH
 RUN mamba create -n team4_env python=3.11 -y
 
 # Activate the new environment
-SHELL ["mamba", "run", "-n", "team3_env", "/bin/bash", "-c"]
+SHELL ["mamba", "run", "-n", "team4_env", "/bin/bash", "-c"]
 
 # Copy requirements.txt into the container
 COPY requirements.txt /app/requirements.txt
