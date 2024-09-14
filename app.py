@@ -13,4 +13,3 @@ if __name__ == "__main__":
         subprocess.run(["streamlit", "run", __file__, "--server.port=5004"])
     else:
         main()
-
