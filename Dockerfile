@@ -55,5 +55,6 @@ EXPOSE 5004
 # Add the conda environment's bin directory to PATH
 ENV PATH=/opt/mambaforge/envs/team4_env/bin:$PATH
 
+
 ENTRYPOINT ["python"]
 CMD ["app.py"]
