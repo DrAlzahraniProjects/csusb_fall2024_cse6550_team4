@@ -46,14 +46,29 @@ COPY requirements.txt /app/requirements.txt
 # Install Python packages from requirements.txt
 RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 
+# Install Jupyter Notebook
+RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
+
+# Install NGINX
+RUN apt-get update && apt-get install -y nginx
+
+# Copy NGINX config
+COPY nginx.conf /etc/nginx/nginx.conf
+
 # Copy the current directory contents into the container at /app
 COPY . /app
 
 # Make port 5004 available
 EXPOSE 5004
+EXPOSE 80
+EXPOSE 8888
 
 # Add the conda environment's bin directory to PATH
 ENV PATH=/opt/mambaforge/envs/team4_env/bin:$PATH
 
-ENTRYPOINT ["python"]
-CMD ["app.py"]
+#ENTRYPOINT ["python"]
+#CMD ["app.py"]
+
+#CMD ["run", "app.py", "--server.port=5004", "--server.enableCORS=false", "--server.headless=true", "--server.baseUrlPath=team4"]
+# Start NGINX, Streamlit, and Jupyter
+CMD service nginx start && streamlit run app.py --server.port=5004 && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
