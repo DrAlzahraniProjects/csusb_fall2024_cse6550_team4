@@ -1,0 +1,7 @@
+name: myenv
+channels:
+  - mamba-forge
+dependencies:
+  - python=3.11
+  - streamlit
+  - jupyter
