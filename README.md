@@ -21,8 +21,12 @@ Change directory to the cloned repository:
 ```bash
 cd csusb_fall2024_cse6550_team4
 ```
+### Step 3: Pull Changes Directly
 
-### Step 3: Build the Docker Image
+```bash
+git pull origin main
+```
+### Step 4: Build the Docker Image
 
 Build the Docker image using the following command:
 
@@ -30,7 +34,7 @@ Build the Docker image using the following command:
 docker build -t team4-app .
 ```
 
-### Step 4: Run the Docker Container
+### Step 5: Run the Docker Container
 
 Run the Docker container with the following command:
 
