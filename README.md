@@ -21,7 +21,7 @@ Change directory to the cloned repository:
 ```bash
 cd csusb_fall2024_cse6550_team4
 ```
-### Step 3: Pull Changes Directly
+### Step 3: Get the latest version of our app by pulling the changes
 
 ```bash
 git pull origin main
