@@ -51,10 +51,21 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy the current directory contents into the container
 COPY . /app
 
+# Copy the start.sh script
+COPY start.sh /app/start.sh
+
 # Expose ports for NGINX, Streamlit, and Jupyter
 EXPOSE 80
 EXPOSE 5004
 EXPOSE 8888
 
 # Start NGINX, Streamlit, and Jupyter
-CMD service nginx start && streamlit run app.py --server.port=5004 && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+#CMD service nginx start && streamlit run app.py --server.port=5004 && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+
+
+
+# Make start.sh executable
+RUN chmod +x /app/start.sh
+
+# Use the start.sh script as the container's entrypoint
+CMD ["/app/start.sh"]
