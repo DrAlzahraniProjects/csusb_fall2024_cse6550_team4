@@ -23,11 +23,11 @@ def main():
     # Create a container for input and button to align them properly
     with st.container():
         # Create two columns for input field and button
-        col1, col2 = st.columns([4, 1])
+        col1, col2 = st.columns([3, 1])
 
         # Place the input box in the first column
         with col1:
-            user_input_new = st.text_input("", placeholder="Enter something here")
+            user_input_new = st.text_input("Input", placeholder="Enter something here",label_visibility="collapsed")
 
         # Place the button in the second column and set its position
         with col2:
