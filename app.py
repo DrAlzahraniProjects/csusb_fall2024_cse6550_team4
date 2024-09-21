@@ -1,7 +1,40 @@
 import streamlit as st
 
 # Set the title of the app
-st.set_page_config(page_title="ChatGPT-like Interface", layout="wide")
+st.set_page_config(page_title="Team4ChatBot", layout="wide")
+
+# Add a logo and title in the main area
+st.markdown(
+    """
+    <style>
+    .title {
+        font-size: 40px;
+        font-weight: bold;
+        text-align: center;
+        color: #0073e6;
+    }
+    .logo-img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 150px;
+    }
+    .footer {
+        font-size: 14px;
+        color: #808080;
+        text-align: center;
+        margin-top: 50px;
+    }
+    </style>
+    """, 
+    unsafe_allow_html=True
+)
+
+# Logo Image (replace with the actual path of your logo)
+#st.markdown('<img src="https://via.placeholder.com/150?text=Team4ChatBot" class="logo-img"/>', unsafe_allow_html=True)
+
+# Team4ChatBot Heading
+st.markdown('<p class="title">Welcome to Team4ChatBot</p>', unsafe_allow_html=True)
 
 # Sidebar for static report metrics
 st.sidebar.header("Statistics Report")
@@ -21,7 +54,7 @@ feedback_summary = st.sidebar.text_area("Feedback Summary", height=100)
 daily_statistics = st.sidebar.text_area("Daily Statistics (comma separated)", height=100)
 
 # Main content area
-st.title("ChatGPT Interaction")
+#st.title("ChatGPT Interaction")
 st.markdown("### Ask Your Question Below:")
 
 # User input for questions
@@ -47,5 +80,8 @@ with col2:
 st.markdown("---")
 st.markdown("### Additional Information")
 st.markdown("Feel free to explore the metrics in the sidebar to better understand your interaction.")
+
+# Footer with a link
+st.markdown('<p class="footer">Powered by <a href="https://team4chatbot.com" target="_blank">Team4ChatBot</a></p>', unsafe_allow_html=True)
 
 # Run this app with: streamlit run your_script.py
