@@ -39,7 +39,7 @@ docker build -t team4-app .
 Run the Docker container with the following command:
 
 ```bash
-docker run -p 80:80 -p 5004:5004 -p 8888:8888 team4-app
+docker run -p 84:84 -p 5004:5004 -p 6004:6004 team4-app
 ```
 
 ### Access the Application
