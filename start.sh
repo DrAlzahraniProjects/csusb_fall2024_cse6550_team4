@@ -21,7 +21,7 @@ streamlit run app.py --server.port=5004 &
 streamlit_pid=$!
 
 # Start Jupyter Notebook in the background
-jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --log-level=WARN &
+jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --log-level=WARN &
 jupyter_pid=$!
 
 # Wait on all background jobs (Streamlit and Jupyter)

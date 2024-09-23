@@ -55,9 +55,9 @@ COPY . /app
 COPY start.sh /app/start.sh
 
 # Expose ports for NGINX, Streamlit, and Jupyter
-EXPOSE 80
+EXPOSE 84
 EXPOSE 5004
-EXPOSE 8888
+EXPOSE 6004
 
 # Start NGINX, Streamlit, and Jupyter
 #CMD service nginx start && streamlit run app.py --server.port=5004 && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
