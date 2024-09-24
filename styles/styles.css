@@ -1,0 +1,42 @@
+/* User message styles */
+.user-message {
+    text-align: right;
+    background-color: #3C3C3C;
+    color: #FFFFFF;
+    border: 1px solid #3C3F41;
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin: 5px;
+    display: inline-block;
+    max-width: 70%;
+    float: right;
+    clear: both;
+}
+
+/* Bot message styles */
+.bot-message {
+    text-align: left;
+    background-color: #2B2B2B;
+    color: #FFFFFF;
+    border: 1px solid #3C3F41;
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin: 5px;
+    display: inline-block;
+    max-width: 70%;
+    float: left;
+    clear: both;
+}
+
+/* Button styles */
+.feedback-buttons {
+    text-align: left;
+    margin: 5px;
+}
+
+.feedback-buttons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+}
