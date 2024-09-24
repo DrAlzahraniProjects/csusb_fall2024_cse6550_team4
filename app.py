@@ -35,6 +35,13 @@ def handle_user_input(user_input):
     bot_response = user_input  # Placeholder response
     st.session_state.chat_history.append({"role": "bot", "content": bot_response})
 
+# Chat input box for user
+user_input = st.chat_input("Enter your question here")
+
+# Process input if user has entered a message
+if user_input:
+    handle_user_input(user_input)
+
 # Display chat history
 for message in st.session_state.chat_history:
     if message['role'] == 'user':
@@ -48,12 +55,4 @@ for message in st.session_state.chat_history:
             "</div>",
             unsafe_allow_html=True
         )
-
-
-# Chat input box for user
-user_input = st.chat_input("Enter your question here")
-
-# Process input if user has entered a message
-if user_input:
-    handle_user_input(user_input)
 
