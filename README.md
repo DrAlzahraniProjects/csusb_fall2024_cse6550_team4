@@ -46,7 +46,7 @@ docker run -p 84:84 -p 5004:5004 -p 6004:6004 team4-app
 
 Once the container is running, you can access the application at:
 
-- http://localhost/team4
+- http://localhost:84/team4
 - http://127.0.0.1:5004
 - http://localhost:5004
 

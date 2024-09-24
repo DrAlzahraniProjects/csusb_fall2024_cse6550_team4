@@ -4,8 +4,10 @@ FROM python:3.11-slim
 # Set the working directory
 WORKDIR /app
 
+
 # Install dependencies
 RUN apt-get update && apt-get install -y wget
+
 
 # Determine system architecture and install the corresponding version of Miniconda
 RUN ARCH=$(uname -m) && \
@@ -44,6 +46,8 @@ RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
 
 # Install NGINX
 RUN apt-get update && apt-get install -y nginx
+RUN apt-get update && apt-get install -y nginx supervisor
+
 
 # Copy NGINX config
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -52,7 +56,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY . /app
 
 # Copy the start.sh script
-#COPY start.sh /app/start.sh
+COPY start.sh /app/start.sh
 
 # Expose ports for NGINX, Streamlit, and Jupyter
 EXPOSE 84
@@ -60,7 +64,7 @@ EXPOSE 5004
 EXPOSE 6004
 
 # Start NGINX, Streamlit, and Jupyter
-#CMD service nginx start && streamlit run app.py --server.port=5004 && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+#CMD service nginx start && streamlit run app.py --server.port=5004 && jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root
 
 
 
