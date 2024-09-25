@@ -53,6 +53,7 @@ Once the container is running, you can access the application at:
   Access the jupyter notebook at:
 - http://localhost:6004
 
+Then navigate to Jupyter_Notebook.ipynb file and run the code
 
 
 ### Additional Information
