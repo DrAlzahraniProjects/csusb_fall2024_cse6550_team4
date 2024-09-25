@@ -10,6 +10,17 @@
     cursor: pointer;
 }
 
+/* Centered Title Style */
+.centered-title {
+    text-align: center;
+    font-size: 36px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    color: #000000;
+}
+
+
 .question-box:hover {
     background-color: #a49d9d;
     transition: background-color 0.3s;

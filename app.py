@@ -12,7 +12,7 @@ with open(css_file_path) as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Team4ChatBot Heading
-st.title("Team4 Chatbot")
+st.markdown("<div class='centered-title'>Team4 Chatbot</div>", unsafe_allow_html=True)
 
 # Sidebar header for static report metrics
 st.sidebar.header("10 Statistics Report")
