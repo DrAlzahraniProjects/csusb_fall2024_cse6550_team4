@@ -4,10 +4,8 @@ FROM python:3.11-slim
 # Set the working directory
 WORKDIR /app
 
-
 # Install dependencies
 RUN apt-get update && apt-get install -y wget
-
 
 # Determine system architecture and install the corresponding version of Miniconda
 RUN ARCH=$(uname -m) && \
@@ -41,13 +39,14 @@ COPY requirements.txt /app/requirements.txt
 # Install Python packages from requirements.txt
 RUN /bin/bash -c "source ~/.bashrc && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y"
 
-# Install Jupyter Notebook
-RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter"
+# Install Jupyter Notebook and necessary kernel
+RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter ipykernel"
+
+# Ensure kernel is installed for the environment
+RUN /root/miniconda3/envs/team4_env/bin/python -m ipykernel install --name team4_env --display-name "Python (team4_env)"
 
 # Install NGINX
 RUN apt-get update && apt-get install -y nginx
-RUN apt-get update && apt-get install -y nginx supervisor
-
 
 # Copy NGINX config
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -55,22 +54,24 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy the current directory contents into the container
 COPY . /app
 
-# Copy the start.sh script
-COPY start.sh /app/start.sh
-
 # Expose ports for NGINX, Streamlit, and Jupyter
 EXPOSE 84
 EXPOSE 5004
 EXPOSE 6004
 
+# Configure Jupyter Notebook settings
+RUN mkdir -p /root/.jupyter && \
+    echo "c.NotebookApp.allow_root = True" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.port = 6004" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.open_browser = False" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.token = ''" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.password = ''" >> /root/.jupyter/jupyter_notebook_config.py
+
+# Debugging: Enable verbose logging for Jupyter
+RUN echo "c.NotebookApp.log_level = 'DEBUG'" >> /root/.jupyter/jupyter_notebook_config.py
+
 # Start NGINX, Streamlit, and Jupyter
-#CMD service nginx start && streamlit run app.py --server.port=5004 && jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root
-
-
-
-# Make start.sh executable
-# RUN chmod +x /app/start.sh
-
-# # Use the start.sh script as the container's entrypoint
-# CMD ["/app/start.sh"]
-CMD service nginx start && streamlit run app.py --server.port=5004 && jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root
+CMD service nginx start && \
+    streamlit run app.py --server.port=5004 & \
+    jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root
