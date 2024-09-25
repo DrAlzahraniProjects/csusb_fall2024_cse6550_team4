@@ -27,16 +27,3 @@
     float: left;
     clear: both;
 }
-
-/* Button styles */
-.feedback-buttons {
-    text-align: left;
-    margin: 5px;
-}
-
-.feedback-buttons button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 24px;
-}
