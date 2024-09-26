@@ -53,7 +53,7 @@ def handle_user_input(user_input):
     st.session_state.chat_history.append({"role": "user", "content": user_input})
     
     # Simulate a chatbot response (replace with your actual model call)
-    bot_response =st.chat_message("ai",avatar='robb.png').write(f"I cannot help you with '{user_input}' right now")  # Placeholder response
+    bot_response =f"I cannot help you with '{user_input}' right now"  # Placeholder response
 
     st.session_state.chat_history.append({"role": "bot", "content": bot_response})
 
