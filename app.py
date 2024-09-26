@@ -1,18 +1,19 @@
 import streamlit as st
 import os
 
+
 # Set page config for wide layout
 st.set_page_config(page_title="Team4ChatBot", layout="wide")
-
 # Path to the styles.css file in the 'styles' folder
 css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
+
 
 # Load the CSS file and apply the styles
 with open(css_file_path) as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Team4ChatBot Heading
-st.markdown("<div class='centered-title'>Team4 Chatbot</div>", unsafe_allow_html=True)
+st.title("Team4 Chatbot")
 
 # Sidebar header for static report metrics
 st.sidebar.header("10 Statistics Report")
@@ -31,10 +32,8 @@ questions = [
     "Daily Statistics"
 ]
 
-
 for question in questions:
     st.sidebar.markdown(f'<div class="question-box">{question}</div>', unsafe_allow_html=True)
-
 
 # Initialize session state if it doesn't exist
 if 'chat_history' not in st.session_state:
@@ -56,18 +55,13 @@ user_input = st.chat_input("Enter your question here")
 if user_input:
     handle_user_input(user_input)
 
-
-
 # Immediately display chat history (reverse chronological order not necessary)
-for message in st.session_state.chat_history:
+for idx, message in enumerate(st.session_state.chat_history):
     if message['role'] == 'user':
         st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
     else:
         st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
-        st.markdown(
-            "<div class='feedback-buttons'>"
-            "<button onclick='alert(\"Liked!\")'>👍</button>"
-            "<button onclick='alert(\"Disliked!\")'>👎</button>"
-            "</div>",
-            unsafe_allow_html=True
-        )
+        sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
+        selected = st.feedback("thumbs",key=f"feedback_{idx}")
+        if selected is not None:
+            st.markdown(f"You selected: {sentiment_mapping[selected]}")

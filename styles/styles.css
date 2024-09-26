@@ -1,36 +1,8 @@
-/* Question Box Styles */
-.question-box {
-    background-color:#f1efef;
-    color: #000000;
-    border: 1px solid #3C3F41;
-    border-radius: 8px;
-    padding: 10px;
-    margin: 5px;
-    text-align: left;
-    cursor: pointer;
-}
-
-/* Centered Title Style */
-.centered-title {
-    text-align: center;
-    font-size: 36px;
-    font-weight: bold;
-    margin-top: 20px;
-    margin-bottom: 40px;
-    color: #000000;
-}
-
-.question-box:hover {
-    background-color: #fbf8f8;
-    transition: background-color 0.3s;
-}
-
-
-/* Chatbot and message styles */
+/* User message styles */
 .user-message {
     text-align: right;
-    background-color:#f1efef;
-    color: #000000;
+    background-color: #3C3C3C;
+    color: #FFFFFF;
     border: 1px solid #3C3F41;
     border-radius: 10px;
     padding: 10px 15px;
@@ -41,10 +13,11 @@
     clear: both;
 }
 
+/* Bot message styles */
 .bot-message {
     text-align: left;
-    background-color:#f4f3f3;
-    color: #000000;
+    background-color: #2B2B2B;
+    color: #FFFFFF;
     border: 1px solid #3C3F41;
     border-radius: 10px;
     padding: 10px 15px;
@@ -54,3 +27,33 @@
     float: left;
     clear: both;
 }
+
+/* Button styles */
+.feedback-buttons {
+    text-align: left;
+    margin: 5px;
+}
+
+.feedback-buttons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+}
+.question-box {
+    background-color: #5A6378;  /* Muted Slate Blue */
+    color: #E0E5EB;  /* Light Mist Gray */
+    border: 1px solid #444A53;  /* Soft Charcoal Gray */
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.question-box:hover {
+    background-color: #74849E;  /* Muted Pale Blue */
+}
+
+
+
