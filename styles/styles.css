@@ -1,7 +1,7 @@
 /* Question Box Styles */
 .question-box {
-    background-color: #353434;
-    color: #ffffff;
+    background-color:#f1efef;
+    color: #000000;
     border: 1px solid #3C3F41;
     border-radius: 8px;
     padding: 10px;
@@ -19,6 +19,12 @@
     margin-bottom: 40px;
     color: #000000;
 }
+
+.question-box:hover {
+    background-color: #fbf8f8;
+    transition: background-color 0.3s;
+}
+
 
 /* Chatbot and message styles */
 .user-message {
