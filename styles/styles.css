@@ -20,6 +20,7 @@
     color: #000000;
 }
 
+
 .question-box:hover {
     background-color: #fbf8f8;
     transition: background-color 0.3s;
