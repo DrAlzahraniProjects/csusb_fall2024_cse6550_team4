@@ -39,19 +39,16 @@ docker build -t team4-app .
 Run the Docker container with the following command:
 
 ```bash
-docker run -p 84:84 -p 5004:5004 -p 6004:6004 team4-app
+docker run -p 5004:5004 team4-app
 ```
 
 ### Access the Application
 
 Once the container is running, you can access the application at:
 
-- http://localhost:84/team4
-- http://127.0.0.1:5004
-- http://localhost:5004
+- http://localhost:5004/team4/
+- http://127.0.0.1:5004/team4
 
-  Access the jupyter notebook at:
-- http://localhost:6004
 
 Then navigate to Jupyter_Notebook.ipynb file and run the code
 
