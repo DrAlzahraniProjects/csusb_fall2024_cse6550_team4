@@ -1,4 +1,4 @@
-# Use Miniconda3 as the base image to avoid installing it manually
+# Use Miniconda3 as the base image to avoid installing it manually 
 FROM continuumio/miniconda3
 
 # Set the working directory
@@ -9,6 +9,10 @@ RUN apt-get update && apt-get install -y wget && apt-get clean
 
 # Update conda to ensure we are using the latest version
 RUN conda update -n base conda -y
+
+# Add 'defaults' and 'conda-forge' channels to conda configuration
+RUN conda config --add channels defaults
+RUN conda config --add channels conda-forge
 
 # Install Mamba using Conda
 RUN conda install -c conda-forge mamba -y
@@ -29,20 +33,11 @@ COPY requirements.txt /app/requirements.txt
 # Install Python packages from requirements.txt using Mamba
 RUN source activate team4_env && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y
 
-RUN source activate team4_env && pip install \
-    pymilvus \
-    mistralai \
-    sentence-transformers
-
 # Install Jupyter Notebook and necessary kernel
 RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel -y
 
 # Ensure the kernel is installed for the environment
 RUN /opt/conda/envs/team4_env/bin/python -m ipykernel install --name team4_env --display-name "Python (team4_env)"
-
-# Additional Python Dependencies
-RUN source activate team4_env && \
-    mamba install -c conda-forge langchain langchain-core langchain-community langchain-huggingface sentence-transformers langchain-text-splitters langchain-mistralai mistralai pymilvus -y
 
 # Setting environment variables for StreamLit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
@@ -54,7 +49,6 @@ ENV STREAMLIT_SERVER_PORT=5004
 # # Copy NGINX config
 # COPY nginx.conf /etc/nginx/nginx.conf
 COPY . /app
-
 
 # Expose ports for NGINX, Streamlit, and Jupyter
 # EXPOSE 84
