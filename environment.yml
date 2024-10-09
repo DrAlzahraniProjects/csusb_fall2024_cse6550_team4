@@ -1,7 +1,18 @@
 name: myenv
 channels:
+  - conda-forge
   - mamba-forge
 dependencies:
   - python=3.11
   - streamlit
   - jupyter
+  - langchain
+  - langchain-core
+  - langchain-community
+  - langchain-huggingface
+  - sentence-transformers
+  - langchain-text-splitters
+  - langchain-mistralai
+  - mistralai
+  - pymilvus
+

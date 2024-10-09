@@ -35,6 +35,10 @@ RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel 
 # Ensure the kernel is installed for the environment
 RUN /opt/conda/envs/team4_env/bin/python -m ipykernel install --name team4_env --display-name "Python (team4_env)"
 
+# Additional Python Dependencies
+RUN source activate team4_env && \
+    mamba install -c conda-forge langchain langchain-core langchain-community langchain-huggingface sentence-transformers langchain-text-splitters langchain-mistralai mistralai pymilvus -y
+
 # Setting environment variables for StreamLit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
 ENV STREAMLIT_SERVER_PORT=5004
