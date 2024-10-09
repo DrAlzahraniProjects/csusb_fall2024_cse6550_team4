@@ -29,6 +29,11 @@ COPY requirements.txt /app/requirements.txt
 # Install Python packages from requirements.txt using Mamba
 RUN source activate team4_env && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y
 
+RUN source activate team4_env && pip install \
+    pymilvus \
+    mistralai \
+    sentence-transformers
+
 # Install Jupyter Notebook and necessary kernel
 RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel -y
 
