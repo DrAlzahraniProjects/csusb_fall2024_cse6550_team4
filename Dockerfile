@@ -1,4 +1,4 @@
-# Use Miniconda3 as the base image to avoid installing it manually
+# Use Miniconda3 as the base image to avoid installing it manually 
 FROM continuumio/miniconda3
 
 # Set the working directory
@@ -9,6 +9,10 @@ RUN apt-get update && apt-get install -y wget && apt-get clean
 
 # Update conda to ensure we are using the latest version
 RUN conda update -n base conda -y
+
+# Add 'defaults' and 'conda-forge' channels to conda configuration
+RUN conda config --add channels defaults
+RUN conda config --add channels conda-forge
 
 # Install Mamba using Conda
 RUN conda install -c conda-forge mamba -y
@@ -45,7 +49,6 @@ ENV STREAMLIT_SERVER_PORT=5004
 # # Copy NGINX config
 # COPY nginx.conf /etc/nginx/nginx.conf
 COPY . /app
-
 
 # Expose ports for NGINX, Streamlit, and Jupyter
 # EXPOSE 84

@@ -1,7 +1,15 @@
 name: myenv
 channels:
-  - mamba-forge
+  - defaults
+  - conda-forge
 dependencies:
   - python=3.11
   - streamlit
   - jupyter
+  - langchain
+  - langchain-core
+  - langchain-community
+  - langchain-huggingface
+  - langchain-text-splitters
+
+
