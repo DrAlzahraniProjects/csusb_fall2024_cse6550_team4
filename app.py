@@ -1,16 +1,10 @@
+# app.py
 import streamlit as st
 import os
-
+from langchain_integration import LangChainChatbot
 
 # Set page config for wide layout
-st.set_page_config(page_title="Team4ChatBot", layout="wide")
-# Path to the styles.css file in the 'styles' folder
-css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
-
-
-# Load the CSS file and apply the styles
-with open(css_file_path) as f:
-    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+st.set_page_config(page_title="Team4 Chatbot", layout="wide")
 
 # Team4ChatBot Heading
 st.title("Team4 Chatbot")
@@ -39,13 +33,19 @@ for question in questions:
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
+# Define the document path to the directory containing your PDF files
+document_path = "Researchpapers"  # Update to your PDF directory path
+
+# Initialize the chatbot
+chatbot = LangChainChatbot(document_path)
+
 # Function to handle user input
 def handle_user_input(user_input):
     # Append user input to chat history
     st.session_state.chat_history.append({"role": "user", "content": user_input})
     
-    # Simulate a chatbot response (replace with your actual model call)
-    bot_response = f"I cannot help you with '{user_input}' right now"  # Placeholder response
+    # Get a response from the chatbot
+    bot_response = chatbot.get_response(user_input)
     st.session_state.chat_history.append({"role": "bot", "content": bot_response})
 
 # Chat input box for user
@@ -55,13 +55,9 @@ user_input = st.chat_input("Enter your question here")
 if user_input:
     handle_user_input(user_input)
 
-# Immediately display chat history (reverse chronological order not necessary)
+# Immediately display chat history
 for idx, message in enumerate(st.session_state.chat_history):
     if message['role'] == 'user':
         st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
     else:
         st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
-        sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
-        selected = st.feedback("thumbs",key=f"feedback_{idx}")
-        if selected is not None:
-            st.markdown(f"You selected: {sentiment_mapping[selected]}")
