@@ -1,63 +1,62 @@
-# Use Python as the base image
-FROM python:3.11-slim
+# Use Miniconda3 as the base image to avoid installing it manually 
+FROM continuumio/miniconda3
 
 # Set the working directory
 WORKDIR /app
 
-# Install dependencies
-RUN apt-get update && apt-get install -y wget
+# Install wget and any required system dependencies
+RUN apt-get update && apt-get install -y wget && apt-get clean
 
-# Determine system architecture and install the corresponding version of Miniconda
-RUN ARCH=$(uname -m) && \
-    if [ "$ARCH" = "x86_64" ]; then \
-        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
-    elif [ "$ARCH" = "aarch64" ]; then \
-        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh; \
-    else \
-        echo "Unsupported architecture: $ARCH" && exit 1; \
-    fi && \
-    bash Miniconda3-latest-Linux-*.sh -b && \
-    ls -la /root/miniconda3 && \
-    rm Miniconda3-latest-Linux-*.sh && \
-    apt-get clean
+# Update conda to ensure we are using the latest version
+RUN conda update -n base conda -y
 
-# Install Mamba using Miniconda and create a new environment with Python 3.11
-RUN /root/miniconda3/bin/conda install mamba -c conda-forge -y \
-    && /root/miniconda3/bin/mamba create -n team4_env python=3.11 -y \
-    && /root/miniconda3/bin/mamba clean --all -f -y
+# Add 'defaults' and 'conda-forge' channels to conda configuration
+RUN conda config --add channels defaults
+RUN conda config --add channels conda-forge
 
-# Set environment path to use team4_env and ensure bash is used
-ENV PATH="/root/miniconda3/envs/team4_env/bin:$PATH"
+# Install Mamba using Conda
+RUN conda install -c conda-forge mamba -y
 
-# Activate the environment and install packages from requirements.txt
+# Create a new environment named 'team4_env' with Python 3.11 using Mamba
+RUN mamba create -n team4_env python=3.11 -y
+
+# Set environment path to use team4_env
+ENV PATH="/opt/conda/envs/team4_env/bin:$PATH"
+
+# Activate the environment and ensure bash is used
 SHELL ["/bin/bash", "-c"]
-RUN echo "source /root/miniconda3/bin/activate team4_env" >> ~/.bashrc
+RUN echo "source activate team4_env" >> ~/.bashrc
 
-# Copy requirements.txt into the container
+# Copy the requirements.txt file into the container
 COPY requirements.txt /app/requirements.txt
 
-# Install Python packages from requirements.txt
-RUN /bin/bash -c "source ~/.bashrc && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y"
+# Install Python packages from requirements.txt using Mamba
+RUN source activate team4_env && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y
+#run pip install -r requirements.txt
+RUN pip install -qU langchain_milvus langchain-cohere
+
 
 # Install Jupyter Notebook and necessary kernel
-RUN /bin/bash -c "source ~/.bashrc && mamba install -c conda-forge jupyter ipykernel"
+RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel -y
 
-# Ensure kernel is installed for the environment
-RUN /root/miniconda3/envs/team4_env/bin/python -m ipykernel install --name team4_env --display-name "Python (team4_env)"
+# Ensure the kernel is installed for the environment
+RUN /opt/conda/envs/team4_env/bin/python -m ipykernel install --name team4_env --display-name "Python (team4_env)"
+
+# Setting environment variables for StreamLit
+ENV STREAMLIT_SERVER_BASEURLPATH=/team4
+ENV STREAMLIT_SERVER_PORT=5004
 
 # Install NGINX
-RUN apt-get update && apt-get install -y nginx
+# RUN apt-get update && apt-get install -y nginx && apt-get clean
 
-# Copy NGINX config
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copy the current directory contents into the container
+# # Copy NGINX config
+# COPY nginx.conf /etc/nginx/nginx.conf
 COPY . /app
 
 # Expose ports for NGINX, Streamlit, and Jupyter
-EXPOSE 84
+# EXPOSE 84
 EXPOSE 5004
-EXPOSE 6004
+# EXPOSE 6004
 
 # Configure Jupyter Notebook settings
 RUN mkdir -p /root/.jupyter && \
@@ -72,6 +71,8 @@ RUN mkdir -p /root/.jupyter && \
 RUN echo "c.NotebookApp.log_level = 'DEBUG'" >> /root/.jupyter/jupyter_notebook_config.py
 
 # Start NGINX, Streamlit, and Jupyter
-CMD service nginx start && \
-    streamlit run app.py --server.port=5004 & \
-    jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root
+# CMD service nginx start && \
+#     streamlit run app.py --server.port=5004 & \
+#     jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root
+
+CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4", "tail -f /dev/null"]
