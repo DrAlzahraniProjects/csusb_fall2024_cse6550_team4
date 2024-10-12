@@ -4,10 +4,11 @@ langchain
 langchain-core
 langchain-community
 langchain-huggingface
-sentence-transformers
 langchain-text-splitters
 langchain-mistralai
-sentence-transformers
-#faiss-cpu
+faiss-cpu
 mistralai
-pymilvus
+huggingface-hub
+pypdf 
+
+
