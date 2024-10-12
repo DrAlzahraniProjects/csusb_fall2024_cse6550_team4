@@ -9,7 +9,7 @@ from langchain_community.document_loaders import PyPDFDirectoryLoader  # Updated
 from langchain_community.llms import HuggingFaceHub  # Updated import for HuggingFaceHub
 from langchain.schema import Document  # Import Document class for document structure
 
-
+#Importing API keys
 load_dotenv()
 HUGGINGFACE_API_KEY=os.getenv("HUGGINGFACE_API_KEY")
 
