@@ -81,6 +81,10 @@ for idx, message in enumerate(st.session_state.chat_history):
         st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
     else:
         st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
+sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
+selected = st.feedback("thumbs")
+if selected is not None:
+    st.markdown(f"You selected: {sentiment_mapping[selected]}")
 
 
 
