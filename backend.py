@@ -14,7 +14,7 @@ load_dotenv()
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
 # Define the data directory where your PDFs are stored
-DATA_DIR = "C:\\csusb_fall2024_cse6550_team4\\Volumes"
+DATA_DIR = "C:\csusb_fall2024_cse6550_team4\Volumes"
 INDEX_FILE = "faiss_index.bin"
 
 # Function to load PDFs using PyPDF Directory Loader
