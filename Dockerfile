@@ -1,13 +1,13 @@
-# Use Miniconda3 as the base image to avoid installing it manually 
+# Use Miniconda3 as the base image
 FROM continuumio/miniconda3
 
 # Set the working directory
 WORKDIR /app
 
-# Install wget and any required system dependencies
+# Install wget and required system dependencies
 RUN apt-get update && apt-get install -y wget && apt-get clean
 
-# Update conda to ensure we are using the latest version
+# Update conda to ensure the latest version
 RUN conda update -n base conda -y
 
 # Add 'defaults' and 'conda-forge' channels to conda configuration
@@ -17,10 +17,10 @@ RUN conda config --add channels conda-forge
 # Install Mamba using Conda
 RUN conda install -c conda-forge mamba -y
 
-# Create a new environment named 'team4_env' with Python 3.11 using Mamba
+# Create a new environment with Python 3.11
 RUN mamba create -n team4_env python=3.11 -y
 
-# Set environment path to use team4_env
+# Set environment path
 ENV PATH="/opt/conda/envs/team4_env/bin:$PATH"
 
 # Activate the environment and ensure bash is used
@@ -30,47 +30,25 @@ RUN echo "source activate team4_env" >> ~/.bashrc
 # Copy the requirements.txt file into the container
 COPY requirements.txt /app/requirements.txt
 
-# Install Python packages from requirements.txt using Mamba
-RUN source activate team4_env && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y
+# Install Python packages using Mamba (for packages available in conda-forge)
+RUN source activate team4_env && mamba install --yes \
+    streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters faiss-cpu && \
+    mamba clean --all -f -y
 
-# Install sentence-transformers using pip
-#RUN source activate team4_env && pip install sentence-transformers
-
-#RUN source activate team4_env && pip install -r /app/requirements.txt
-
-# Install sentence-transformers using pip after activating team4_env
-RUN /opt/conda/envs/team4_env/bin/pip install sentence-transformers
-
-RUN pip install -qU langchain_milvus
-Run pip install sentence-transformers
-
-
-# Install pymilvus using pip after activating team4_env
-#RUN /opt/conda/envs/team4_env/bin/pip install pymilvus
-
-
-# Log installed Python packages
-RUN source activate team4_env && pip freeze > /app/installed_packages.txt
+# Install remaining packages using pip (for pip-only packages)
+RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub mistralai pypdf
 
 # Install Jupyter Notebook and necessary kernel
 RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel -y
 
-# Ensure the kernel is installed for the environment
-RUN /opt/conda/envs/team4_env/bin/python -m ipykernel install --name team4_env --display-name "Python (team4_env)"
-
-# Setting environment variables for StreamLit
+# Set environment variables for StreamLit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
 ENV STREAMLIT_SERVER_PORT=5004
 
-# Install NGINX
-# RUN apt-get update && apt-get install -y nginx && apt-get clean
-
-# # Copy NGINX config
-# COPY nginx.conf /etc/nginx/nginx.conf
+# Copy the application files into the container
 COPY . /app
 
-# Expose ports for NGINX, Streamlit, and Jupyter
-# EXPOSE 84
+# Expose ports for Streamlit and Jupyter
 EXPOSE 5004
 EXPOSE 6004
 
@@ -83,13 +61,5 @@ RUN mkdir -p /root/.jupyter && \
     echo "c.NotebookApp.token = ''" >> /root/.jupyter/jupyter_notebook_config.py && \
     echo "c.NotebookApp.password = ''" >> /root/.jupyter/jupyter_notebook_config.py
 
-# Debugging: Enable verbose logging for Jupyter
-RUN echo "c.NotebookApp.log_level = 'DEBUG'" >> /root/.jupyter/jupyter_notebook_config.py
-
-# Start NGINX, Streamlit, and Jupyter
-# CMD service nginx start && \
-#     streamlit run app.py --server.port=5004 & \
-#     jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root
-
+# Start Streamlit and Jupyter
 CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"]
-
