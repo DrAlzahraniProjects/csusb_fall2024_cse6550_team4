@@ -2,12 +2,11 @@ import streamlit as st
 import os
 from backend import initialize_embeddings, load_faiss_vector_store, initialize_qa_pipeline, get_chatbot_response, create_faiss_index
 
-
 # Set page config for wide layout
 st.set_page_config(page_title="Team4ChatBot", layout="wide")
+
 # Path to the styles.css file in the 'styles' folder
 css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
-
 
 # Load the CSS file and apply the styles
 with open(css_file_path) as f:
@@ -54,22 +53,32 @@ else:
     qa_pipeline = initialize_qa_pipeline(vector_store)
 
 # Function to handle user input
+# Function to handle user input
 def handle_user_input(user_input):
     # Append user input to chat history
     st.session_state.chat_history.append({"role": "user", "content": user_input})
     
-    
     # Get the chatbot response and citations from backend
     bot_response, citations = get_chatbot_response(qa_pipeline, user_input)
 
-    # Get the chatbot response and citations from backend
-    bot_response, citations = get_chatbot_response(qa_pipeline, user_input)
+    # Combine bot response and citations in one message
+    full_response = bot_response
+    if citations:
+        full_response += f"\n\nReferences: {citations}"  # Append citations at the end
 
-    st.session_state.chat_history.append({"role": "bot", "content": bot_response})
-    st.session_state.chat_history.append({"role": "bot", "content": f"Citations: {citations}"})
+    # Add the combined bot response and citations to chat history
+    st.session_state.chat_history.append({"role": "bot", "content": full_response})
+
+    # Immediately display chat history
+    for message in st.session_state.chat_history:
+        if message['role'] == 'user':
+            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+        else:
+            # Handle bot messages and citations separately using markdown to ensure clickable links
+            st.markdown(f"{message['content']}")
 
 # Chat input box for user
-user_input = st.chat_input("Enter your question here")
+user_input = st.chat_input("Message writing assistant")
 
 # Process input if user has entered a message
 if user_input:
@@ -80,21 +89,10 @@ for idx, message in enumerate(st.session_state.chat_history):
     if message['role'] == 'user':
         st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
     else:
-        st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
+        # No need for "unsafe_allow_html" here since we are dealing with markdown
+        st.markdown(f"{message['content']}")
+
 sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
 selected = st.feedback("thumbs")
 if selected is not None:
     st.markdown(f"You selected: {sentiment_mapping[selected]}")
-
-
-
-# Immediately display chat history (reverse chronological order not necessary)
-#for idx, message in enumerate(st.session_state.chat_history):
-#    if message['role'] == 'user':
-#        st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-#    else:
-#        st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
-#        sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
-#        selected = st.feedback("thumbs",key=f"feedback_{idx}")
-#        if selected is not None:
-#            st.markdown(f"You selected: {sentiment_mapping[selected]}")
