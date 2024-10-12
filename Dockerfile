@@ -33,6 +33,25 @@ COPY requirements.txt /app/requirements.txt
 # Install Python packages from requirements.txt using Mamba
 RUN source activate team4_env && mamba install --yes --file /app/requirements.txt && mamba clean --all -f -y
 
+# Install sentence-transformers using pip
+#RUN source activate team4_env && pip install sentence-transformers
+
+#RUN source activate team4_env && pip install -r /app/requirements.txt
+
+# Install sentence-transformers using pip after activating team4_env
+RUN /opt/conda/envs/team4_env/bin/pip install sentence-transformers
+
+RUN pip install -qU langchain_milvus
+Run pip install sentence-transformers
+
+
+# Install pymilvus using pip after activating team4_env
+#RUN /opt/conda/envs/team4_env/bin/pip install pymilvus
+
+
+# Log installed Python packages
+RUN source activate team4_env && pip freeze > /app/installed_packages.txt
+
 # Install Jupyter Notebook and necessary kernel
 RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel -y
 
@@ -53,7 +72,7 @@ COPY . /app
 # Expose ports for NGINX, Streamlit, and Jupyter
 # EXPOSE 84
 EXPOSE 5004
-# EXPOSE 6004
+EXPOSE 6004
 
 # Configure Jupyter Notebook settings
 RUN mkdir -p /root/.jupyter && \
@@ -72,4 +91,5 @@ RUN echo "c.NotebookApp.log_level = 'DEBUG'" >> /root/.jupyter/jupyter_notebook_
 #     streamlit run app.py --server.port=5004 & \
 #     jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root
 
-CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4", "tail -f /dev/null"]
+CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"]
+

@@ -12,17 +12,24 @@ _term() {
 # Trap SIGTERM and SIGINT signals and call the _term function
 trap _term SIGTERM SIGINT
 
-# Start NGINX
-service nginx start
-nginx_pid=$!
+# Activate the environment before starting any services
+source activate team4_env
 
 # Start Streamlit in the background
-streamlit run app.py --server.port=5004 &
+streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 &
 streamlit_pid=$!
 
 # Start Jupyter Notebook in the background
-jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --log-level=WARN &
+jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' &
 jupyter_pid=$!
 
-# Wait on all background jobs (Streamlit and Jupyter)
-wait $streamlit_pid $jupyter_pid
+# Start NGINX in the background
+service nginx start
+nginx_pid=$!
+
+# Wait on all background jobs (Streamlit, Jupyter, and NGINX)
+wait $streamlit_pid
+wait $jupyter_pid
+wait $nginx_pid
+
+
