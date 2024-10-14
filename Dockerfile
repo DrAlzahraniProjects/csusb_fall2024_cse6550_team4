@@ -45,8 +45,14 @@ RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel 
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
 ENV STREAMLIT_SERVER_PORT=5004
 
+# Add python-dotenv here if it's not in requirements.txt
+RUN pip install python-dotenv
+
 # Copy the application files into the container
 COPY . /app
+
+# Copy the .env file into the container
+COPY .env /app/.env
 
 # Expose ports for Streamlit and Jupyter
 EXPOSE 5004

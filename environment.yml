@@ -11,5 +11,6 @@ dependencies:
   - langchain-community
   - langchain-huggingface
   - langchain-text-splitters
+  - python-dotenv
 
 

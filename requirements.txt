@@ -10,5 +10,7 @@ faiss-cpu
 mistralai
 huggingface-hub
 pypdf 
+python-dotenv
+
 
 

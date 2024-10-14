@@ -1,10 +1,15 @@
 import streamlit as st
+from dotenv import load_dotenv
 import os
 from backend import initialize_embeddings, load_faiss_vector_store, initialize_qa_pipeline, get_chatbot_response, create_faiss_index
 
 # Set page config for wide layout
 st.set_page_config(page_title="Team4ChatBot", layout="wide")
 
+load_dotenv()
+
+# Access the API key
+api_key = os.getenv("HUGGINGFACE_API_KEY")
 # Path to the styles.css file in the 'styles' folder
 css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
 
