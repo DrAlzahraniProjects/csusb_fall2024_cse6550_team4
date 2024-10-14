@@ -85,12 +85,12 @@ if user_input:
     handle_user_input(user_input)
 
 # Immediately display chat history
-for idx, message in enumerate(st.session_state.chat_history):
-    if message['role'] == 'user':
-        st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-    else:
-        # No need for "unsafe_allow_html" here since we are dealing with markdown
-        st.markdown(f"{message['content']}")
+# for idx, message in enumerate(st.session_state.chat_history):
+#     if message['role'] == 'user':
+#         st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+#     else:
+#         # No need for "unsafe_allow_html" here since we are dealing with markdown
+#         st.markdown(f"{message['content']}")
 
 sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
 selected = st.feedback("thumbs")
