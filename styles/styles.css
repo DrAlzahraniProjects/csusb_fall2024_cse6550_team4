@@ -9,8 +9,7 @@
     margin: 5px;
     display: inline-block;
     max-width: 70%;
-    float: right;
-    clear: both;
+    align-self: flex-end;
 }
 
 /* Bot message styles */
@@ -24,9 +23,8 @@
     margin: 5px;
     display: inline-block;
     max-width: 70%;
-    float: left;
-    clear: both;
-}
+    align-self: flex-start;
+    }
 
 /* Button styles */
 .feedback-buttons {
