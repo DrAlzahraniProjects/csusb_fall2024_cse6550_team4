@@ -42,6 +42,8 @@ if 'chat_history' not in st.session_state:
 # Display the chat input box first
 #user_input = st.chat_input("Message writing assistant")
 
+
+
 # Initialize backend components
 embeddings = initialize_embeddings()
 
