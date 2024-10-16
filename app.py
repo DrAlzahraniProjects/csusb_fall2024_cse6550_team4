@@ -6,7 +6,7 @@ from backend import initialize_embeddings, load_faiss_vector_store, initialize_q
 st.set_page_config(page_title="Team4ChatBot", layout="wide")
 
 # Path to the styles.css file in the 'styles' folder
-css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
+css_file_path = os.path.join(os.path.dirname(_file_), 'styles', 'styles.css')
 
 # Load the CSS file and apply the styles
 with open(css_file_path) as f:
@@ -18,7 +18,7 @@ st.title("Team4 Chatbot")
 # Sidebar header for static report metrics
 st.sidebar.header("10 Statistics Report")
 
-# Sidebar 10 statistics (you can fill these in with real data)
+# Sidebar 10 statistics (placeholders for real data)
 questions = [
     "Number of Questions", 
     "Number of Correct Answers", 
@@ -39,20 +39,34 @@ for question in questions:
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
+# Display the chat input box first
+user_input = st.chat_input("Message writing assistant")
+
 # Initialize backend components
 embeddings = initialize_embeddings()
 
 # Check if FAISS index exists, if not, create it
 if not os.path.exists("faiss_index.bin"):
-    st.write("Creating FAISS index, please wait...")
+    st.write("Response Generating, please wait...")  # Update message here
     documents = create_faiss_index("Volumes", "faiss_index.bin")
-    st.write("FAISS index created.")
     qa_pipeline = initialize_qa_pipeline(documents)
 else:
     vector_store = load_faiss_vector_store("faiss_index.bin", embeddings)
     qa_pipeline = initialize_qa_pipeline(vector_store)
 
-# Function to handle user input
+# Function to clean up repeated text in the response
+def clean_repeated_text(text):
+    sentences = text.split('. ')
+    seen = set()
+    cleaned_sentences = []
+    
+    for sentence in sentences:
+        if sentence not in seen:
+            cleaned_sentences.append(sentence)
+            seen.add(sentence)
+    
+    return '. '.join(cleaned_sentences)
+
 # Function to handle user input
 def handle_user_input(user_input):
     # Append user input to chat history
@@ -61,37 +75,29 @@ def handle_user_input(user_input):
     # Get the chatbot response and citations from backend
     bot_response, citations = get_chatbot_response(qa_pipeline, user_input)
 
+    # Clean up any repeated content in the bot response
+    cleaned_response = clean_repeated_text(bot_response)
+    
     # Combine bot response and citations in one message
-    full_response = bot_response
+    full_response = cleaned_response
     if citations:
         full_response += f"\n\nReferences: {citations}"  # Append citations at the end
 
-    # Add the combined bot response and citations to chat history
+    # Add the combined bot response and citations to chat history only once
     st.session_state.chat_history.append({"role": "bot", "content": full_response})
-
-    # Immediately display chat history
-    for message in st.session_state.chat_history:
-        if message['role'] == 'user':
-            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-        else:
-            # Handle bot messages and citations separately using markdown to ensure clickable links
-            st.markdown(f"{message['content']}")
-
-# Chat input box for user
-user_input = st.chat_input("Message writing assistant")
 
 # Process input if user has entered a message
 if user_input:
     handle_user_input(user_input)
 
-# Immediately display chat history
-# for idx, message in enumerate(st.session_state.chat_history):
-#     if message['role'] == 'user':
-#         st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-#     else:
-#         # No need for "unsafe_allow_html" here since we are dealing with markdown
-#         st.markdown(f"{message['content']}")
+# Immediately display chat history without looping more than once
+for message in st.session_state.chat_history:
+    if message['role'] == 'user':
+        st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"{message['content']}")  # Display bot response
 
+# Handle feedback with thumbs-up and thumbs-down
 sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
 selected = st.feedback("thumbs")
 if selected is not None:
