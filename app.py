@@ -40,7 +40,7 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
 # Display the chat input box first
-user_input = st.chat_input("Message writing assistant")
+#user_input = st.chat_input("Message writing assistant")
 
 # Initialize backend components
 embeddings = initialize_embeddings()
@@ -85,6 +85,7 @@ def handle_user_input(user_input):
 
     # Add the combined bot response and citations to chat history only once
     st.session_state.chat_history.append({"role": "bot", "content": full_response})
+user_input = st.chat_input("Message writing assistant")
 
 # Process input if user has entered a message
 if user_input:
