@@ -6,7 +6,7 @@ from backend import initialize_embeddings, load_faiss_vector_store, initialize_q
 st.set_page_config(page_title="Team4ChatBot", layout="wide")
 
 # Path to the styles.css file in the 'styles' folder
-css_file_path = os.path.join(os.path.dirname(_file_), 'styles', 'styles.css')
+css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
 
 # Load the CSS file and apply the styles
 with open(css_file_path) as f:
