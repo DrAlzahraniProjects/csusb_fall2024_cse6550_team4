@@ -60,8 +60,8 @@ def load_faiss_vector_store(index_file, embeddings):
 # Load fine-tuned model for chatbot
 from transformers import GPTNeoForCausalLM, GPT2Tokenizer
 def load_fine_tuned_model():
-    model = GPTNeoForCausalLM.from_pretrained("./fine_tuned_model")
-    tokenizer = GPT2Tokenizer.from_pretrained("./fine_tuned_model")
+    model = GPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-125M")
+    tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-125M")
     return model, tokenizer
 
 # Initialize the RetrievalQA pipeline with the fine-tuned model
@@ -71,7 +71,7 @@ def initialize_qa_pipeline(vector_store):
     # Set up HuggingFaceHub to load the fine-tuned model
     from langchain.llms import HuggingFaceHub
     llm = HuggingFaceHub(
-        repo_id="./fine_tuned_model", 
+        repo_id="EleutherAI/gpt-neo-125M", 
         huggingfacehub_api_token=os.getenv("HUGGINGFACE_TOKEN")
     )
 
@@ -86,5 +86,24 @@ def initialize_qa_pipeline(vector_store):
     )
     
     return qa_chain
+
+
+# Function to get chatbot response
+def get_chatbot_response(qa_pipeline, user_input):
+    # Use the QA pipeline to generate a response and retrieve source documents
+    response = qa_pipeline({"query": user_input})
+    
+    # Extract the chatbot response
+    bot_response = response['result']
+    
+    # Extract citation sources and format them as clickable URLs
+    sources = response['source_documents']
+    
+     # Dynamically create Markdown links for each source, using the title as the link text
+    citations = ', '.join(
+        [f"[{doc.metadata.get('source')}]({doc.metadata.get('source')})" for doc in sources if doc.metadata.get('source')])
+   
+    
+    return bot_response, citations
 
 
