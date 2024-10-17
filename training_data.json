@@ -1,0 +1,10 @@
+{
+    "train": [
+      {"text": "Question: What is AI?\nAnswer: AI stands for Artificial Intelligence."},
+      {"text": "Question: Define Machine Learning.\nAnswer: Machine Learning is a subset of AI."}
+    ],
+    "validation": [
+      {"text": "Question: What is NLP?\nAnswer: NLP stands for Natural Language Processing."}
+    ]
+  }
+  

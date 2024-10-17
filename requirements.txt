@@ -10,5 +10,5 @@ faiss-cpu
 mistralai
 huggingface-hub
 pypdf 
-
-
+transformers
+datasets

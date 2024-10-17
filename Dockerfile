@@ -36,7 +36,7 @@ RUN source activate team4_env && mamba install --yes \
     mamba clean --all -f -y
 
 # Install remaining packages using pip (for pip-only packages)
-RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub mistralai pypdf
+RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub mistralai pypdf transformers datasets python-dotenv
 
 # Install Jupyter Notebook and necessary kernel
 RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel -y
@@ -45,8 +45,11 @@ RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel 
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
 ENV STREAMLIT_SERVER_PORT=5004
 
-# Copy the application files into the container
+# Copy the application files, including training_data.json, into the container
 COPY . /app
+
+# Copy the training_data.json file specifically into the /app directory
+COPY training_data.json /app/
 
 # Expose ports for Streamlit and Jupyter
 EXPOSE 5004
@@ -58,8 +61,7 @@ RUN mkdir -p /root/.jupyter && \
     echo "c.NotebookApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_notebook_config.py && \
     echo "c.NotebookApp.port = 6004" >> /root/.jupyter/jupyter_notebook_config.py && \
     echo "c.NotebookApp.open_browser = False" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.token = ''" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.password = ''" >> /root/.jupyter/jupyter_notebook_config.py
+    echo "c.NotebookApp.token = ''" >> /root/.jupyter/jupyter_notebook_config.py
 
 # Start Streamlit and Jupyter
 CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"]
