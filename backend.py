@@ -10,6 +10,15 @@ load_dotenv()
 
 os.environ["HF_DATASETS_CACHE"] = ""  # Disable HuggingFace dataset cache
 
+def initialize_embeddings(model):
+    """
+    Placeholder function to initialize or modify embeddings for the model.
+    Modify this function if specific embedding initialization is required.
+    """
+    print("Initializing embeddings for the model...")
+    # Here you can implement any logic to modify the model's embeddings if needed
+    return model
+
 def fine_tune_model(training_data_path, hub_repo_id):
     """
     Fine-tune a smaller model and upload the fine-tuned model to HuggingFace Hub.
@@ -23,6 +32,9 @@ def fine_tune_model(training_data_path, hub_repo_id):
     # Load smaller pre-trained model and tokenizer (distilgpt2)
     model = GPT2LMHeadModel.from_pretrained("distilgpt2")
     tokenizer = GPT2Tokenizer.from_pretrained("distilgpt2")
+
+    # Initialize embeddings before training (added call to initialize_embeddings)
+    model = initialize_embeddings(model)
 
     # Load dataset manually from the JSON file
     with open(training_data_path, 'r') as f:
@@ -92,4 +104,3 @@ def upload_to_hub(hub_repo_id, token):
         token=token
     )
     print(f"Model uploaded to HuggingFace Hub at: https://huggingface.co/{hub_repo_id}")
-
