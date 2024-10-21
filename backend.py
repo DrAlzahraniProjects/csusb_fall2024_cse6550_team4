@@ -1,109 +1,95 @@
 import os
-import faiss
+import json
+from datasets import Dataset
+from transformers import GPT2LMHeadModel, GPT2Tokenizer, Trainer, TrainingArguments, DataCollatorForLanguageModeling
+from huggingface_hub import HfApi
 from dotenv import load_dotenv
-import numpy as np
-from langchain.chains import RetrievalQA
-from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.document_loaders import PyPDFDirectoryLoader
-from langchain.schema import Document
 
-# Importing API keys
+# Load environment variables from .env file
 load_dotenv()
-HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 
-# Define the data directory where your PDFs are stored
-DATA_DIR = "C:/csusb_fall2024_cse6550_team4/Volumes"
-INDEX_FILE = "faiss_index.bin"
+os.environ["HF_DATASETS_CACHE"] = ""  # Disable HuggingFace dataset cache
 
-# Function to load PDFs using PyPDF Directory Loader
-def load_pdfs(data_dir):
-    loader = PyPDFDirectoryLoader(data_dir)
-    documents = loader.load()
-    for doc in documents:
-        if "paper1.pdf" in doc.metadata["source"]:
-            doc.metadata["source"] = "https://dl.acm.org/doi/10.1145/3597503.3649398"
-        elif "paper2.pdf" in doc.metadata["source"]:
-            doc.metadata["source"] = "https://dl.acm.org/doi/10.1145/3597503.3649399"
-    return documents
+def fine_tune_model(training_data_path, hub_repo_id):
+    """
+    Fine-tune a smaller model and upload the fine-tuned model to HuggingFace Hub.
+    The HuggingFace token is loaded from the .env file.
+    """
+    # Load the HuggingFace API token from environment variables
+    token = os.getenv("HUGGINGFACE_TOKEN")
+    if not token:
+        raise ValueError("HuggingFace token not found. Make sure it's set in the .env file.")
 
-# Function to split documents into smaller chunks
-def split_documents(documents):
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    split_docs = []
-    for doc in documents:
-        chunks = splitter.split_text(doc.page_content)
-        for chunk in chunks:
-            split_docs.append(Document(page_content=chunk, metadata=doc.metadata))
-    return split_docs
+    # Load smaller pre-trained model and tokenizer (distilgpt2)
+    model = GPT2LMHeadModel.from_pretrained("distilgpt2")
+    tokenizer = GPT2Tokenizer.from_pretrained("distilgpt2")
 
-# Initialize embeddings
-def initialize_embeddings():
-    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    # Load dataset manually from the JSON file
+    with open(training_data_path, 'r') as f:
+        data = json.load(f)
 
-# Create FAISS index
-def create_faiss_index(data_dir, index_file):
-    documents = load_pdfs(data_dir)
-    split_docs = split_documents(documents)
-    embeddings = initialize_embeddings()
-    vector_store = FAISS.from_documents(split_docs, embeddings)
-    vector_store.save_local(index_file)
-    return vector_store
+    # Convert the JSON data to HuggingFace Dataset format
+    train_data = Dataset.from_dict({"text": [example['text'] for example in data["train"]]})
+    validation_data = Dataset.from_dict({"text": [example['text'] for example in data["validation"]]})
 
-# Load FAISS vector store
-def load_faiss_vector_store(index_file, embeddings):
-    if os.path.exists(index_file):
-        return FAISS.load_local(index_file, embeddings, allow_dangerous_deserialization=True)
-    return None
+    # Tokenize the dataset with shorter max length for speed
+    def tokenize_function(examples):
+        return tokenizer(examples["text"], truncation=True, padding="max_length", max_length=128)  # Reduced max_length
 
-# Load fine-tuned model for chatbot
-from transformers import GPTNeoForCausalLM, GPT2Tokenizer
-def load_fine_tuned_model():
-    model = GPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-125M")
-    tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-125M")
-    return model, tokenizer
+    tokenized_train_data = train_data.map(tokenize_function, batched=True)
+    tokenized_validation_data = validation_data.map(tokenize_function, batched=True)
 
-# Initialize the RetrievalQA pipeline with the fine-tuned model
-def initialize_qa_pipeline(vector_store):
-    model, tokenizer = load_fine_tuned_model()
-
-    # Set up HuggingFaceHub to load the fine-tuned model
-    from langchain.llms import HuggingFaceHub
-    llm = HuggingFaceHub(
-        repo_id="EleutherAI/gpt-neo-125M", 
-        huggingfacehub_api_token=os.getenv("HUGGINGFACE_TOKEN")
+    # Define training arguments with fewer epochs and larger batch size
+    training_args = TrainingArguments(
+        output_dir="./fine_tuned_model",
+        per_device_train_batch_size=8,  # Larger batch size for faster training
+        per_device_eval_batch_size=8,
+        num_train_epochs=1,  # Fewer epochs for faster training
+        logging_dir="./logs",
+        save_total_limit=2,
+        evaluation_strategy="steps",
+        eval_steps=50,  # More frequent evaluations
+        save_steps=100,  # Save model more frequently
+        logging_steps=25
     )
 
-    retriever = vector_store.as_retriever()
-    retriever.search_kwargs = {"k": 1}
+    # Data collator for causal language modeling (not using MLM)
+    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        retriever=retriever,
-        return_source_documents=True,
-        chain_type="stuff"
+    # Initialize the Trainer
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=tokenized_train_data,
+        eval_dataset=tokenized_validation_data,
+        data_collator=data_collator
     )
-    
-    return qa_chain
 
+    # Train the model
+    trainer.train()
 
-# Function to get chatbot response
-def get_chatbot_response(qa_pipeline, user_input):
-    # Use the QA pipeline to generate a response and retrieve source documents
-    response = qa_pipeline({"query": user_input})
-    
-    # Extract the chatbot response
-    bot_response = response['result']
-    
-    # Extract citation sources and format them as clickable URLs
-    sources = response['source_documents']
-    
-     # Dynamically create Markdown links for each source, using the title as the link text
-    citations = ', '.join(
-        [f"[{doc.metadata.get('source')}]({doc.metadata.get('source')})" for doc in sources if doc.metadata.get('source')])
-   
-    
-    return bot_response, citations
+    # Save the fine-tuned model and tokenizer locally
+    trainer.save_model("./fine_tuned_model")
+    tokenizer.save_pretrained("./fine_tuned_model")
 
+    print("Model fine-tuning complete!")
+
+    # Upload the fine-tuned model to HuggingFace Hub
+    upload_to_hub(hub_repo_id, token)
+
+def upload_to_hub(hub_repo_id, token):
+    """
+    Upload the fine-tuned model to HuggingFace Hub using the provided token.
+    """
+    # Initialize the HuggingFace API
+    api = HfApi()
+
+    # Upload the model to HuggingFace Hub
+    api.upload_folder(
+        folder_path="./fine_tuned_model",
+        repo_id=hub_repo_id,
+        repo_type="model",
+        token=token
+    )
+    print(f"Model uploaded to HuggingFace Hub at: https://huggingface.co/{hub_repo_id}")
 
