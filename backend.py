@@ -10,7 +10,7 @@ from langchain.schema import Document
 
 # Importing API keys
 load_dotenv()
-HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
+
 
 # Define the data directory where your PDFs are stored
 DATA_DIR = "C:/csusb_fall2024_cse6550_team4/Volumes"
@@ -67,12 +67,15 @@ def load_fine_tuned_model():
 # Initialize the RetrievalQA pipeline with the fine-tuned model
 def initialize_qa_pipeline(vector_store):
     model, tokenizer = load_fine_tuned_model()
-
+    huggingfacehub_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
     # Set up HuggingFaceHub to load the fine-tuned model
     from langchain.llms import HuggingFaceHub
+    if not huggingfacehub_api_token:
+        raise ValueError("HUGGINGFACEHUB_API_TOKEN is not set in the environment")
     llm = HuggingFaceHub(
         repo_id="EleutherAI/gpt-neo-125M", 
-        huggingfacehub_api_token=os.getenv("HUGGINGFACE_TOKEN")
+        huggingfacehub_api_token=huggingfacehub_api_token
+
     )
 
     retriever = vector_store.as_retriever()

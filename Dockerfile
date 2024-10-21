@@ -20,6 +20,9 @@ RUN conda install -c conda-forge mamba -y
 # Create a new environment with Python 3.11
 RUN mamba create -n team4_env python=3.11 -y
 
+ARG HUGGINGFACEHUB_API_TOKEN
+ENV HUGGINGFACEHUB_API_TOKEN=$HUGGINGFACEHUB_API_TOKEN
+
 # Set environment path
 ENV PATH="/opt/conda/envs/team4_env/bin:$PATH"
 
@@ -44,6 +47,8 @@ RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel 
 # Set environment variables for StreamLit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
 ENV STREAMLIT_SERVER_PORT=5004
+
+
 
 # Copy the application files, including training_data.json, into the container
 COPY . /app
