@@ -36,22 +36,25 @@ def fine_tune_model(training_data_path, hub_repo_id):
     def tokenize_function(examples):
         return tokenizer(examples["text"], truncation=True, padding="max_length", max_length=512)
 
-    tokenized_train_data = train_data.map(tokenize_function, batched=True)
-    tokenized_validation_data = validation_data.map(tokenize_function, batched=True)
+    tokenized_train_data = train_data.map(tokenize_function, batched=True, num_proc=4)  # Use multi-process tokenization
+    tokenized_validation_data = validation_data.map(tokenize_function, batched=True, num_proc=4)
+
 
     # Define the training arguments
     training_args = TrainingArguments(
         output_dir="./fine_tuned_model",
-        per_device_train_batch_size=4,
-        per_device_eval_batch_size=4,
+        per_device_train_batch_size=8,
+        gradient_accumulation_steps=4,
         num_train_epochs=3,
         logging_dir="./logs",
         save_total_limit=2,
         evaluation_strategy="steps",
-        eval_steps=100,
-        save_steps=500,
-        logging_steps=50
+        eval_steps=500,
+        save_steps=1000,
+        logging_steps=100,
+        fp16=True  # Enable mixed precision
     )
+
 
     # Data collator for causal language modeling
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
