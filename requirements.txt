@@ -5,10 +5,7 @@ langchain-core
 langchain-community
 langchain-huggingface
 langchain-text-splitters
-langchain-mistralai
+sentence-transformers
 faiss-cpu
-mistralai
-huggingface-hub
-pypdf 
 transformers
-datasets
+huggingface-hub

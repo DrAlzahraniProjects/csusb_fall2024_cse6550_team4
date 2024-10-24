@@ -14,7 +14,7 @@ RUN conda update -n base conda -y
 RUN conda config --add channels defaults
 RUN conda config --add channels conda-forge
 
-# Install Mamba using Conda
+# Install Mamba using Conda (Mamba is faster than Conda)
 RUN conda install -c conda-forge mamba -y
 
 # Create a new environment with Python 3.11
@@ -32,11 +32,11 @@ COPY requirements.txt /app/requirements.txt
 
 # Install Python packages using Mamba (for packages available in conda-forge)
 RUN source activate team4_env && mamba install --yes \
-    streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters faiss-cpu && \
+    streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters faiss-cpu transformers && \
     mamba clean --all -f -y
 
-# Install remaining packages using pip (for pip-only packages)
-RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub mistralai pypdf transformers datasets python-dotenv
+# Install remaining packages using pip
+RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub
 
 # Install Jupyter Notebook and necessary kernel
 RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel -y
@@ -45,11 +45,8 @@ RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel 
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
 ENV STREAMLIT_SERVER_PORT=5004
 
-# Copy the application files, including training_data.json, into the container
+# Copy the application files into the container
 COPY . /app
-
-# Copy the training_data.json file specifically into the /app directory
-COPY training_data.json /app/
 
 # Expose ports for Streamlit and Jupyter
 EXPOSE 5004
