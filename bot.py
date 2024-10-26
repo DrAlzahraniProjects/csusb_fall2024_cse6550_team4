@@ -153,3 +153,106 @@ def initialize_milvus(uri: str=MILVUS_URI):
 
     return vector_store
 
+
+    def load_documents_from_web():
+    """
+    Load the documents from the web and store the page contents
+
+    Returns:
+        list: The documents loaded from the web
+    """
+    loader = RecursiveUrlLoader(
+        url=CORPUS_SOURCE,
+        prevent_outside=True,
+        base_url=CORPUS_SOURCE
+        )
+    documents = loader.load()
+    
+    return documents
+
+def split_documents(documents):
+    """
+    Split the documents into chunks
+
+    Args:
+        documents (list): The documents to split
+
+    Returns:
+        list: list of chunks of documents
+    """
+    # Create a text splitter to split the documents into chunks
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,  # Split the text into chunks of 1000 characters
+        chunk_overlap=300,  # Overlap the chunks by 300 characters
+        is_separator_regex=False,  # Don't split on regex
+    )
+    # Split the documents into chunks
+    docs = text_splitter.split_documents(documents)
+    return docs
+
+
+def create_vector_store(docs, embeddings, uri):
+    """
+    This function initializes a vector store using the provided documents and embeddings.
+    It connects to a local Milvus database specified by the URI. If a collection named "IT_support" already exists,
+    it loads the existing vector store; otherwise, it creates a new vector store and drops any existing one.
+
+    Args:
+        docs (list): A list of documents to be stored in the vector store.
+        embeddings : A function or model that generates embeddings for the documents.
+        uri (str): Path to the local milvus db
+
+    Returns:
+        vector_store: The vector store created
+    """
+    # Create the directory if it does not exist
+    head = os.path.split(uri)
+    os.makedirs(head[0], exist_ok=True)
+
+    # Connect to the Milvus database
+    connections.connect("default",uri=uri)
+
+    # Check if the collection already exists
+    if utility.has_collection("IT_support"):
+        print("Collection already exists. Loading existing Vector Store.")
+        # loading the existing vector store
+        vector_store = Milvus(
+            collection_name="IT_support",
+            embedding_function=get_embedding_function(),
+            connection_args={"uri": uri}
+        )
+    else:
+        # Create a new vector store and drop any existing one
+        vector_store = Milvus.from_documents(
+            documents=docs,
+            embedding=embeddings,
+            collection_name="IT_support",
+            connection_args={"uri": uri},
+            drop_old=True,
+        )
+        print("Vector Store Created")
+    return vector_store
+
+
+def load_exisiting_db(uri=MILVUS_URI):
+    """
+    Load an existing vector store from the local Milvus database specified by the URI.
+
+    Args:
+        uri (str, optional): Path to the local milvus db. Defaults to MILVUS_URI.
+
+    Returns:
+        vector_store: The vector store created
+    """
+    # Load an existing vector store
+    vector_store = Milvus(
+        collection_name="IT_support",
+        embedding_function = get_embedding_function(),
+        connection_args={"uri": uri},
+    )
+    print("Vector Store Loaded")
+    return vector_store
+
+if __name__ == '__main__':
+    pass
+
