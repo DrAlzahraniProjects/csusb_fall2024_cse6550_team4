@@ -28,18 +28,24 @@ SHELL ["/bin/bash", "-c"]
 RUN echo "source activate team4_env" >> ~/.bashrc
 
 # Copy the requirements.txt file into the container
-COPY requirements.txt /app/requirements.txt
+# COPY requirements.txt /app/requirements.txt
+
+ARG CONDA_AUTO_UPDATE_CONDA=false
+# Install Python packages from requirements.txt
+#RUN mamba install --yes --file requirements.txt && mamba clean --all -f -y
 
 # Install Python packages using Mamba (for packages available in conda-forge)
 RUN source activate team4_env && mamba install --yes \
-    streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters faiss-cpu transformers && \
+    streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters langchain-mistralai faiss-cpu roman transformers && \
     mamba clean --all -f -y
 
-# Install remaining packages using pip
+# # Install remaining packages using pip
 RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub
 
-# Install Jupyter Notebook and necessary kernel
+# # Install Jupyter Notebook and necessary kernel
 RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel -y
+
+RUN pip install -qU langchain_milvus
 
 # Set environment variables for StreamLit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4

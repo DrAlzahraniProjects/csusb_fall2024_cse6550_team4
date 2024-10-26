@@ -1,115 +1,155 @@
-
-# Web crawling function to load documents
 CORPUS_SOURCE = 'https://dl.acm.org/doi/proceedings/10.1145/3597503'
+
 import os
-import faiss
 from dotenv import load_dotenv
-from langchain.chains import RetrievalQA
-from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.document_loaders import WebBaseLoader
-from transformers import GPTNeoForCausalLM, GPT2Tokenizer
-from pymilvus import connections, utility
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.schema import Document
+from langchain_core.prompts import PromptTemplate
+#from langchain_mistralai import MistralAIEmbeddings
+from langchain_mistralai.chat_models import ChatMistralAI
+#from langchain_cohere import ChatCohere
+from langchain_milvus import Milvus
+from langchain_community.document_loaders import WebBaseLoader, RecursiveUrlLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.chains import create_retrieval_chain
+from langchain_huggingface import HuggingFaceEmbeddings
+from pymilvus import connections, utility
+from requests.exceptions import HTTPError
+from httpx import HTTPStatusError
 
-# Load environment variables from .env file
-load_dotenv()
+#load_dotenv()
+MISTRAL_API_KEY = "ulwFdFnWqetpQH4L8VpjgGVpJ2s8VmAm"
 
-def load_documents_from_web():
-    loader = WebBaseLoader(CORPUS_SOURCE)
-    documents = loader.load()
-    return documents
+MILVUS_URI = "./milvus/milvus_vector.db"
+MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
-# Function to split documents into smaller chunks
-def split_documents(documents):
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    split_docs = []
-    for doc in documents:
-        chunks = splitter.split_text(doc.page_content)
-        for chunk in chunks:
-            split_docs.append(Document(page_content=chunk, metadata=doc.metadata))
-    return split_docs
+def get_embedding_function():
+    """
+    returns embedding function for the model
 
-# Initialize embeddings
-def initialize_embeddings():
-    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    Returns:
+        embedding function
+    """
+    embedding_function = HuggingFaceEmbeddings(model_name=MODEL_NAME)
+    return embedding_function
 
-# Create FAISS index
-def create_faiss_index(index_file):
+
+def query_rag(query):
+    """
+    Entry point for the RAG model to generate an answer to a given query
+
+    This function initializes the RAG model, sets up the necessary components such as the prompt template, vector store, 
+    retriever, document chain, and retrieval chain, and then generates a response to the provided query.
+
+    Args:
+        query (str): The query string for which an answer is to be generated.
+    
+    Returns:
+        str: The answer to the query
+    """
+    # Define the model
+    model = ChatMistralAI(model='open-mistral-7b')
+    print("Model Loaded")
+
+    prompt = create_prompt()
+
+    # Load the vector store and create the retriever
+    vector_store = load_exisiting_db(uri=MILVUS_URI)
+    retriever = vector_store.as_retriever()
+    try:
+        document_chain = create_stuff_documents_chain(model, prompt)
+        print("Document Chain Created")
+
+        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        print("Retrieval Chain Created")
+    
+        # Generate a response to the query
+        response = retrieval_chain.invoke({"input": f"{query}"})
+    except HTTPStatusError as e:
+        print(f"HTTPStatusError: {e}")
+        if e.response.status_code == 429:
+            return "I am currently experiencing high traffic. Please try again later.", []
+        #return "I am unable to answer this question at the moment. Please try again later.", []
+        return f"HTTPStatusError: {e}", [] 
+    
+    # logic to add sources to the response
+    max_relevant_sources = 4 # number of sources at most to be added to the response
+    all_sources = ""
+    sources = []
+    count = 1
+    for i in range(max_relevant_sources):
+        try:
+            source = response["context"][i].metadata["source"]
+            # check if the source is already added to the list
+            if source not in sources:
+                sources.append(source)
+                all_sources += f"[Source {count}]({source}), "
+                count += 1
+        except IndexError: # if there are no more sources to add
+            break
+    all_sources = all_sources[:-2] # remove the last comma and space
+    response["answer"] += f"\n\nSources: {all_sources}"
+    print("Response Generated")
+
+    return response["answer"], sources
+
+
+
+def create_prompt():
+    """
+    Create a prompt template for the RAG model
+
+    Returns:
+        PromptTemplate: The prompt template for the RAG model
+    """
+    # Define the prompt template
+    PROMPT_TEMPLATE = """
+    Human: You are an AI assistant, and provides answers to questions by using fact based and statistical information when possible.
+    Use the following pieces of information to provide a concise answer to the question enclosed in <question> tags.
+    Only use the information provided in the <context> tags.
+    If you don't know the answer, just say that you don't know, don't try to make up an answer.
+    <context>
+    {context}
+    </context>
+
+    <question>
+    {input}
+    </question>
+
+    The response should be specific and use statistics or numbers when possible.
+
+    Assistant:"""
+
+    # Create a PromptTemplate instance with the defined template and input variables
+    prompt = PromptTemplate(
+        template=PROMPT_TEMPLATE, input_variables=["context", "question"]
+    )
+    print("Prompt Created")
+
+    return prompt
+
+
+def initialize_milvus(uri: str=MILVUS_URI):
+    """
+    Initialize the vector store for the RAG model
+
+    Args:
+        uri (str, optional): Path to the local milvus db. Defaults to MILVUS_URI.
+
+    Returns:
+        vector_store: The vector store created
+    """
+    embeddings = get_embedding_function()
+    print("Embeddings Loaded")
     documents = load_documents_from_web()
-    split_docs = split_documents(documents)
-    embeddings = initialize_embeddings()
-    vector_store = FAISS.from_documents(split_docs, embeddings)
-    vector_store.save_local(index_file)
+    print("Documents Loaded")
+    print(len(documents))
+
+    # Split the documents into chunks
+    docs = split_documents(documents=documents)
+    print("Documents Splitting completed")
+
+    vector_store = create_vector_store(docs, embeddings, uri)
+
     return vector_store
 
-# Load FAISS vector store
-def load_faiss_vector_store(index_file, embeddings):
-    if os.path.exists(index_file):
-        return FAISS.load_local(index_file, embeddings, allow_dangerous_deserialization=True)
-    return None
-
-# Initialize GPT-Neo model (not fine-tuned, pre-trained)
-def load_gpt_neo_model():
-    model = GPTNeoForCausalLM.from_pretrained("EleutherAI/gpt-neo-125M")
-    tokenizer = GPT2Tokenizer.from_pretrained("EleutherAI/gpt-neo-125M")
-    return model, tokenizer
-
-# Initialize the RetrievalQA pipeline
-def initialize_qa_pipeline(vector_store):
-    retriever = vector_store.as_retriever()
-    retriever.search_kwargs = {"k": 1}
-    
-    # Load the pre-trained GPT-Neo model and tokenizer
-    model, tokenizer = load_gpt_neo_model()
-
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=model,
-        retriever=retriever,
-        return_source_documents=True,
-        chain_type="stuff"
-    )
-    
-    return qa_chain
-
-# Function to get chatbot response
-def get_chatbot_response(qa_pipeline, user_input):
-    # Use the QA pipeline to generate a response and retrieve source documents
-    response = qa_pipeline({"query": user_input})
-    
-    # Extract the chatbot response
-    bot_response = response['result']
-    
-    # Extract citation sources and format them as clickable URLs
-    sources = response['source_documents']
-    citations = ', '.join(
-        [f"[{doc.metadata.get('source')}]({doc.metadata.get('source')})" for doc in sources if doc.metadata.get('source')]
-    )
-    
-    return bot_response, citations
-
-# Main function to initialize everything and process user queries
-def main():
-    embeddings = initialize_embeddings()
-
-    # Check if FAISS index exists, if not, create it
-    if not os.path.exists("faiss_index.bin"):
-        vector_store = create_faiss_index("faiss_index.bin")
-    else:
-        vector_store = load_faiss_vector_store("faiss_index.bin", embeddings)
-
-    qa_pipeline = initialize_qa_pipeline(vector_store)
-    
-    # Example of handling user input
-    while True:
-        user_input = input("Ask your question: ")
-        if user_input.lower() == "exit":
-            break
-        response, citations = get_chatbot_response(qa_pipeline, user_input)
-        print(f"Response: {response}")
-        if citations:
-            print(f"References: {citations}")
-
-if __name__ == "__main__":
-    main()
