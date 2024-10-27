@@ -17,8 +17,8 @@ from pymilvus import connections, utility
 from requests.exceptions import HTTPError
 from httpx import HTTPStatusError
 
-#load_dotenv()
-MISTRAL_API_KEY = "ulwFdFnWqetpQH4L8VpjgGVpJ2s8VmAm"
+load_dotenv()
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
 MILVUS_URI = "./milvus/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
@@ -154,7 +154,7 @@ def initialize_milvus(uri: str=MILVUS_URI):
     return vector_store
 
 
-    def load_documents_from_web():
+def load_documents_from_web():
     """
     Load the documents from the web and store the page contents
 
@@ -165,7 +165,7 @@ def initialize_milvus(uri: str=MILVUS_URI):
         url=CORPUS_SOURCE,
         prevent_outside=True,
         base_url=CORPUS_SOURCE
-        )
+    )
     documents = loader.load()
     
     return documents
@@ -213,11 +213,11 @@ def create_vector_store(docs, embeddings, uri):
     connections.connect("default",uri=uri)
 
     # Check if the collection already exists
-    if utility.has_collection("IT_support"):
+    if utility.has_collection("research_paper_chatbot"):
         print("Collection already exists. Loading existing Vector Store.")
         # loading the existing vector store
         vector_store = Milvus(
-            collection_name="IT_support",
+            collection_name="research_paper_chatbot",
             embedding_function=get_embedding_function(),
             connection_args={"uri": uri}
         )
@@ -226,7 +226,7 @@ def create_vector_store(docs, embeddings, uri):
         vector_store = Milvus.from_documents(
             documents=docs,
             embedding=embeddings,
-            collection_name="IT_support",
+            collection_name="research_paper_chatbot",
             connection_args={"uri": uri},
             drop_old=True,
         )
@@ -246,7 +246,7 @@ def load_exisiting_db(uri=MILVUS_URI):
     """
     # Load an existing vector store
     vector_store = Milvus(
-        collection_name="IT_support",
+        collection_name="research_paper_chatbot",
         embedding_function = get_embedding_function(),
         connection_args={"uri": uri},
     )
