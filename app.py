@@ -1,11 +1,9 @@
 import streamlit as st
 from uuid import uuid4
 import os
-#from bot import initialize_embeddings, load_faiss_vector_store, initialize_qa_pipeline, get_chatbot_response, create_faiss_index
-# from backend.inference import chat_completion
 from bot import *
-from statistics_chatbot import update_statistics, get_statistics_display
-import time
+from statistics_chatbot import update_statistics, get_statistics_display  # Importing statistics module
+
 # Set page config for wide layout
 st.set_page_config(page_title="Team4ChatBot", layout="wide")
 
@@ -22,71 +20,15 @@ st.title("Team4 Chatbot")
 # Sidebar header for static report metrics
 st.sidebar.header("10 Statistics Report")
 
-# Sidebar 10 statistics (placeholders for real data)
-questions = [
-    "Number of Questions", 
-    "Number of Correct Answers", 
-    "Number of Incorrect Answers",
-    "User Engagement Metrics",
-    "Avg Response Time (s)",
-    "Accuracy Rate (%)",
-    "Common Topics or Keywords",
-    "User Satisfaction Ratings (1-5)",
-    "Feedback Summary",
-    "Daily Statistics"
-]
-
-for question in questions:
-    st.sidebar.markdown(f'<div class="question-box">{question}</div>', unsafe_allow_html=True)
-
 # Initialize session state if it doesn't exist
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
- # Handle user input
-    # if prompt := st.chat_input("Message Team4 support chatbot"):
-    #     unique_id = str(uuid4())
-    #     user_message_id = f"user_message_{unique_id}"
-    #     assistant_message_id = f"assistant_message_{unique_id}"
 
-    #     st.session_state.messages[user_message_id] = {"role": "user", "content": prompt}    
-    #     st.markdown(f"<div class='user-message'>{prompt}</div>", unsafe_allow_html=True)
-    #     st.write(prompt)
-    #     response_placeholder = st.empty()
-
-    #     with response_placeholder.container():
-    #         with st.spinner('Generating Response...'):
-    #             # generate response from RAG model
-    #             st.write("Generating")
-    #             answer, sources = query_rag(prompt)
-    #         if sources == []:
-    #             st.error(f"{answer}")
-    #         else:
-    #             st.session_state.messages[assistant_message_id] = {"role": "assistant", "content": answer, "sources": sources}
-    #             st.rerun()
 # Display the chat input box first
 user_input = st.chat_input("Message writing assistant")
 
-
-    # Initialize session state for conversation history
-if 'conversation' not in st.session_state:
-        st.session_state['conversation'] = []
-        with st.spinner("Initializing, Please Wait..."):
-            vector_store = initialize_milvus()
-
-if 'messages' not in st.session_state:
-        st.session_state['messages'] = [] 
-
-
 # Initialize backend components
 # embeddings = initialize_embeddings()
-
-# # Check if FAISS index exists, if not, create it
-# if not os.path.exists("faiss_index.bin"):
-#     documents = create_faiss_index("Volumes", "faiss_index.bin")
-#     qa_pipeline = initialize_qa_pipeline(documents)
-# else:
-#     vector_store = load_faiss_vector_store("faiss_index.bin", embeddings)
-#     qa_pipeline = initialize_qa_pipeline(vector_store)
 
 # Function to clean up repeated text in the response
 def clean_repeated_text(text):
@@ -103,6 +45,10 @@ def clean_repeated_text(text):
 
 # Function to handle user input
 def handle_user_input(user_input):
+    # Start timing the response generation
+    import time
+    start_time = time.time()
+    
     # Append user input to chat history immediately but don't re-render it during response generation
     st.session_state.chat_history.append({"role": "user", "content": user_input})
 
@@ -111,10 +57,9 @@ def handle_user_input(user_input):
 
     # Display "Response Generating" message
     with st.spinner("Response Generating, please wait..."):
-        print("Query Rag calling")
         # Get the chatbot response and citations from backend
         bot_response, citations = query_rag(user_input)
-        print("Query Rag END")
+
         # Clean up any repeated content in the bot response
         cleaned_response = clean_repeated_text(bot_response)
     
@@ -125,11 +70,16 @@ def handle_user_input(user_input):
 
     # Add the combined bot response and citations to chat history only once
     st.session_state.chat_history.append({"role": "bot", "content": full_response})
-start_time = time.time()
 
-response_time = time.time() - start_time
-correct_answer = True  # Placeholder for correct answer flag
-update_statistics(user_input, bot_response, response_time, correct_answer)
+    # Calculate the response time
+    response_time = time.time() - start_time
+
+    # Assume some logic to determine if the answer is correct
+    correct_answer = True  # Replace this with actual logic
+
+    # Update statistics based on user input and bot response
+    update_statistics(user_input, full_response, response_time, correct_answer)
+
 # Process input if user has entered a message
 if user_input:
     handle_user_input(user_input)
@@ -141,9 +91,14 @@ for message in st.session_state.chat_history:
         continue
     else:
         st.markdown(f"{message['content']}")  # Display bot response
-current_statistics = get_statistics_display()
-for key, value in current_statistics.items():
-    st.sidebar.markdown(f'<div class="answer-box">{value}</div>', unsafe_allow_html=True)
+
+# Get current statistics for display
+current_stats = get_statistics_display()
+
+# Sidebar 10 statistics (from current_stats)
+for key, value in current_stats.items():
+    st.sidebar.markdown(f'<div class="question-box">{key}: {value}</div>', unsafe_allow_html=True)
+
 # Handle feedback with thumbs-up and thumbs-down
 sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
 selected = st.feedback("thumbs")
