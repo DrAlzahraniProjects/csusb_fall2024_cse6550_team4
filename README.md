@@ -49,9 +49,6 @@ Once the container is running, you can access the application at:
 - http://localhost:5004/team4/
 - http://127.0.0.1:5004/team4
 
-you can access the Jupyter at:
- http://localhost:6004/team4 
-
 ### Additional Information
 
 - **Docker Installation**: Ensure Docker is installed on your machine. You can download it from [Docker's official website](https://www.docker.com/products/docker-desktop).
