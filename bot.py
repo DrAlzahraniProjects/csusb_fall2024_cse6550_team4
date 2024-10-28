@@ -1,5 +1,3 @@
-CORPUS_SOURCE = 'https://dl.acm.org/doi/proceedings/10.1145/3597503'
-
 import os
 from dotenv import load_dotenv
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -22,6 +20,7 @@ MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
 MILVUS_URI = "./milvus/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+CORPUS_SOURCE = 'https://dl.acm.org/doi/proceedings/10.1145/3597503'
 
 def get_embedding_function():
     """
@@ -161,11 +160,12 @@ def load_documents_from_web():
     Returns:
         list: The documents loaded from the web
     """
-    loader = RecursiveUrlLoader(
-        url=CORPUS_SOURCE,
-        prevent_outside=True,
-        base_url=CORPUS_SOURCE
-    )
+    # loader = RecursiveUrlLoader(
+    #     url=CORPUS_SOURCE,
+    #     prevent_outside=True,
+    #     base_url=CORPUS_SOURCE
+    # )
+    loader = WebBaseLoader(CORPUS_SOURCE)
     documents = loader.load()
     
     return documents
@@ -182,8 +182,8 @@ def split_documents(documents):
     """
     # Create a text splitter to split the documents into chunks
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,  # Split the text into chunks of 1000 characters
-        chunk_overlap=300,  # Overlap the chunks by 300 characters
+        chunk_size=2000,  # Split the text into chunks of 1000 characters
+        chunk_overlap=200,  # Overlap the chunks by 300 characters
         is_separator_regex=False,  # Don't split on regex
     )
     # Split the documents into chunks

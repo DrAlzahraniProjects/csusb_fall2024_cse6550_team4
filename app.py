@@ -64,6 +64,17 @@ if 'chat_history' not in st.session_state:
 # Display the chat input box first
 user_input = st.chat_input("Message writing assistant")
 
+
+    # Initialize session state for conversation history
+if 'conversation' not in st.session_state:
+        st.session_state['conversation'] = []
+        with st.spinner("Initializing, Please Wait..."):
+            vector_store = initialize_milvus()
+
+if 'messages' not in st.session_state:
+        st.session_state['messages'] = [] 
+
+
 # Initialize backend components
 # embeddings = initialize_embeddings()
 
@@ -98,9 +109,10 @@ def handle_user_input(user_input):
 
     # Display "Response Generating" message
     with st.spinner("Response Generating, please wait..."):
+        print("Query Rag calling")
         # Get the chatbot response and citations from backend
         bot_response, citations = query_rag(user_input)
-
+        print("Query Rag END")
         # Clean up any repeated content in the bot response
         cleaned_response = clean_repeated_text(bot_response)
     
