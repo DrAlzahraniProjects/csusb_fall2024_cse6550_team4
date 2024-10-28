@@ -125,6 +125,8 @@ def handle_user_input(user_input):
 
     # Add the combined bot response and citations to chat history only once
     st.session_state.chat_history.append({"role": "bot", "content": full_response})
+start_time = time.time()
+
 response_time = time.time() - start_time
 correct_answer = True  # Placeholder for correct answer flag
 update_statistics(user_input, bot_response, response_time, correct_answer)
