@@ -4,6 +4,8 @@ import os
 #from bot import initialize_embeddings, load_faiss_vector_store, initialize_qa_pipeline, get_chatbot_response, create_faiss_index
 # from backend.inference import chat_completion
 from bot import *
+from statistics_chatbot import update_statistics, get_statistics_display
+import time
 # Set page config for wide layout
 st.set_page_config(page_title="Team4ChatBot", layout="wide")
 
@@ -123,7 +125,9 @@ def handle_user_input(user_input):
 
     # Add the combined bot response and citations to chat history only once
     st.session_state.chat_history.append({"role": "bot", "content": full_response})
-
+response_time = time.time() - start_time
+correct_answer = True  # Placeholder for correct answer flag
+update_statistics(user_input, bot_response, response_time, correct_answer)
 # Process input if user has entered a message
 if user_input:
     handle_user_input(user_input)
@@ -135,7 +139,9 @@ for message in st.session_state.chat_history:
         continue
     else:
         st.markdown(f"{message['content']}")  # Display bot response
-
+current_statistics = get_statistics_display()
+for key, value in current_statistics.items():
+    st.sidebar.markdown(f'<div class="answer-box">{value}</div>', unsafe_allow_html=True)
 # Handle feedback with thumbs-up and thumbs-down
 sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
 selected = st.feedback("thumbs")
