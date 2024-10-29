@@ -20,7 +20,11 @@ MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
 MILVUS_URI = "./milvus/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-CORPUS_SOURCE = 'https://dl.acm.org/doi/proceedings/10.1145/3597503'
+# CORPUS_SOURCE = 'https://dl.acm.org/doi/proceedings/10.1145/3597503'
+CORPUS_SOURCE = [
+    'https://dl.acm.org/doi/proceedings/10.1145/3597503',
+    'https://dl.acm.org/doi/10.1145/3597503.3649398'
+]
 
 def get_embedding_function():
     """
@@ -165,8 +169,18 @@ def load_documents_from_web():
     #     prevent_outside=True,
     #     base_url=CORPUS_SOURCE
     # )
-    loader = WebBaseLoader(CORPUS_SOURCE)
-    documents = loader.load()
+    documents = []
+    for url in CORPUS_SOURCE:
+        loader = WebBaseLoader(url)
+        try:
+            loaded_docs = loader.load()
+            documents.extend(loaded_docs)  # Add loaded documents to the main list
+            print(f"Documents loaded from {url}")
+        except Exception as e:
+            print(f"Failed to load documents from {url}: {e}")
+
+    # loader = WebBaseLoader(CORPUS_SOURCE)
+    # documents = loader.load()
     
     return documents
 

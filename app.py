@@ -27,6 +27,18 @@ if 'chat_history' not in st.session_state:
 # Display the chat input box first
 user_input = st.chat_input("Message writing assistant")
 
+# Get current statistics for display
+current_stats = get_statistics_display()
+
+# Sidebar 10 statistics (from current_stats)
+for key, value in current_stats.items():
+    st.sidebar.markdown(f'<div class="question-box">{key}: {value}</div>', unsafe_allow_html=True)
+
+if 'conversation' not in st.session_state:
+        st.session_state['conversation'] = []
+        with st.spinner("Initializing, Please Wait..."):
+            vector_store = initialize_milvus()
+
 # Initialize backend components
 # embeddings = initialize_embeddings()
 
@@ -92,12 +104,7 @@ for message in st.session_state.chat_history:
     else:
         st.markdown(f"{message['content']}")  # Display bot response
 
-# Get current statistics for display
-current_stats = get_statistics_display()
 
-# Sidebar 10 statistics (from current_stats)
-for key, value in current_stats.items():
-    st.sidebar.markdown(f'<div class="question-box">{key}: {value}</div>', unsafe_allow_html=True)
 
 # Handle feedback with thumbs-up and thumbs-down
 sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
