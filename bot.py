@@ -14,17 +14,14 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from pymilvus import connections, utility
 from requests.exceptions import HTTPError
 from httpx import HTTPStatusError
+from data import CORPUS_SOURCE
 
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
 MILVUS_URI = "./milvus/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-# CORPUS_SOURCE = 'https://dl.acm.org/doi/proceedings/10.1145/3597503'
-CORPUS_SOURCE = [
-    'https://dl.acm.org/doi/proceedings/10.1145/3597503',
-    'https://dl.acm.org/doi/10.1145/3597503.3649398'
-]
+
 
 def get_embedding_function():
     """

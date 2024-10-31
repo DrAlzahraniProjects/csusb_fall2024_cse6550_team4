@@ -110,4 +110,8 @@ for message in st.session_state.chat_history:
 sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
 selected = st.feedback("thumbs")
 if selected is not None:
-    st.markdown(f"You selected: {sentiment_mapping[selected]}")
+    correct_answer = selected == 1
+    feedback_message = sentiment_mapping[selected]
+    st.session_state.chat_history.append({"role": "user", "content": feedback_message})
+    update_statistics("feedback", "feedback", 0, correct_answer)
+    
