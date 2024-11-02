@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Install wget and required system dependencies
 RUN apt-get update && apt-get install -y wget && apt-get clean
+RUN pip install --no-cache-dir streamlit matplotlib
 
 # Update conda to ensure the latest version
 RUN conda update -n base conda -y

@@ -1,11 +1,16 @@
 import streamlit as st
-from uuid import uuid4
 import os
-from bot import *
-from statistics_chatbot import update_statistics, get_statistics_display  # Importing statistics module
+import numpy as np
+from statistics_chatbot import (
+    update_statistics, 
+    get_statistics_display, 
+    compute_metrics, 
+    reset_statistics
+)
+from bot import query_rag, initialize_milvus
 
 # Set page config for wide layout
-st.set_page_config(page_title="Team4ChatBot", layout="wide")
+st.set_page_config(page_title="Team4 Chatbot", layout="wide")
 
 # Path to the styles.css file in the 'styles' folder
 css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
@@ -14,7 +19,7 @@ css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
 with open(css_file_path) as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-# Team4ChatBot Heading
+# Team4 Chatbot Heading
 st.title("Team4 Chatbot")
 
 # Sidebar header for static report metrics
@@ -25,7 +30,7 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
 # Display the chat input box first
-user_input = st.chat_input("Message writing assistant")
+user_input = st.chat_input("Message writing assistant", key='chat_input')
 
 # Get current statistics for display
 current_stats = get_statistics_display()
@@ -34,13 +39,15 @@ current_stats = get_statistics_display()
 for key, value in current_stats.items():
     st.sidebar.markdown(f'<div class="question-box">{key}: {value}</div>', unsafe_allow_html=True)
 
-if 'conversation' not in st.session_state:
-        st.session_state['conversation'] = []
-        with st.spinner("Initializing, Please Wait..."):
-            vector_store = initialize_milvus()
+# Display the confusion matrix in sidebar
+if "confusion_matrix" in current_stats:
+    st.sidebar.write("Confusion Matrix:")
+    st.sidebar.table(current_stats["confusion_matrix"])
 
-# Initialize backend components
-# embeddings = initialize_embeddings()
+if 'conversation' not in st.session_state:
+    st.session_state['conversation'] = []
+    with st.spinner("Initializing, Please Wait..."):
+        vector_store = initialize_milvus()
 
 # Function to clean up repeated text in the response
 def clean_repeated_text(text):
@@ -57,11 +64,10 @@ def clean_repeated_text(text):
 
 # Function to handle user input
 def handle_user_input(user_input):
-    # Start timing the response generation
     import time
     start_time = time.time()
     
-    # Append user input to chat history immediately but don't re-render it during response generation
+    # Append user input to chat history
     st.session_state.chat_history.append({"role": "user", "content": user_input})
 
     # Display chat history immediately (user's question)
@@ -71,26 +77,20 @@ def handle_user_input(user_input):
     with st.spinner("Response Generating, please wait..."):
         # Get the chatbot response and citations from backend
         bot_response, citations = query_rag(user_input)
-
-        # Clean up any repeated content in the bot response
         cleaned_response = clean_repeated_text(bot_response)
-    
-    # Combine bot response and citations in one message
-    full_response = cleaned_response
-    if citations:
-        full_response += f"\n\nReferences: {citations}"  # Append citations at the end
+        full_response = cleaned_response + (f"\n\nReferences: {citations}" if citations else "")
 
-    # Add the combined bot response and citations to chat history only once
+    # Add the combined bot response to chat history
     st.session_state.chat_history.append({"role": "bot", "content": full_response})
 
     # Calculate the response time
     response_time = time.time() - start_time
 
-    # Assume some logic to determine if the answer is correct
+    # Determine if the answer is correct (placeholder logic)
     correct_answer = True  # Replace this with actual logic
 
     # Update statistics based on user input and bot response
-    update_statistics(user_input, full_response, response_time, correct_answer)
+    update_statistics(user_input, full_response, response_time, correct_answer, is_new_question=True)
 
 # Process input if user has entered a message
 if user_input:
@@ -99,19 +99,38 @@ if user_input:
 # After response generation, render chat history including both user and bot messages
 for message in st.session_state.chat_history:
     if message['role'] == 'user':
-        # The user message has already been displayed, so skip re-rendering it
-        continue
+        st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
     else:
-        st.markdown(f"{message['content']}")  # Display bot response
-
-
+        st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
 
 # Handle feedback with thumbs-up and thumbs-down
-sentiment_mapping = [":material/thumb_down:", ":material/thumb_up:"]
-selected = st.feedback("thumbs")
-if selected is not None:
-    correct_answer = selected == 1
-    feedback_message = sentiment_mapping[selected]
-    st.session_state.chat_history.append({"role": "user", "content": feedback_message})
-    update_statistics("feedback", "feedback", 0, correct_answer)
+feedback = st.radio("Did this answer help you?", ('👍', '👎'))
+if feedback == '👍':
+    correct_answer = True
+    st.success("Thank you for your feedback!")
+else:
+    correct_answer = False
+    st.warning("We're sorry to hear that.")
+
+# Update statistics based on feedback
+if feedback:
+    update_statistics("feedback", "feedback", 0, correct_answer, is_new_question=False)
+
+# Compute metrics and display confusion matrix
+if st.button('Compute Metrics'):
+    y_true = np.random.randint(0, 2, 100)  # Placeholder for actual labels
+    y_pred = np.random.randint(0, 2, 100)  # Placeholder for actual predictions
+    cm, metrics = compute_metrics(y_true, y_pred)
     
+    if cm is not None:
+        st.write("Confusion Matrix:")
+        st.table(cm)
+        
+        # Display metrics
+        for metric_name, metric_value in metrics.items():
+            st.write(f"{metric_name}: {metric_value:.2f}")
+
+# Reset statistics
+if st.button('Reset Statistics'):
+    reset_statistics()
+    st.success("Statistics reset successfully.")
