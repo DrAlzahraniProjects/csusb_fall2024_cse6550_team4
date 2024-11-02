@@ -76,12 +76,13 @@ def handle_user_input(user_input):
     # Display "Response Generating" message
     with st.spinner("Response Generating, please wait..."):
         # Get the chatbot response and citations from backend
-        bot_response, citations = query_rag(user_input)
+        # bot_response, citations = query_rag(user_input)
+        bot_response = query_rag(user_input)
         cleaned_response = clean_repeated_text(bot_response)
-        full_response = cleaned_response + (f"\n\nReferences: {citations}" if citations else "")
+        # full_response = cleaned_response + (f"\n\nReferences: {citations}" if citations else "")
 
     # Add the combined bot response to chat history
-    st.session_state.chat_history.append({"role": "bot", "content": full_response})
+    st.session_state.chat_history.append({"role": "bot", "content": cleaned_response})
 
     # Calculate the response time
     response_time = time.time() - start_time
@@ -90,7 +91,7 @@ def handle_user_input(user_input):
     correct_answer = True  # Replace this with actual logic
 
     # Update statistics based on user input and bot response
-    update_statistics(user_input, full_response, response_time, correct_answer, is_new_question=True)
+    update_statistics(user_input, bot_response, response_time, correct_answer, is_new_question=True)
 
 # Process input if user has entered a message
 if user_input:
