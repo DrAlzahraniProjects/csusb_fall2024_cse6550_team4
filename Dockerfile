@@ -43,10 +43,8 @@ RUN source activate team4_env && mamba install --yes \
 # # Install remaining packages using pip
 RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub
 
-# # Install Jupyter Notebook and necessary kernel
-RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel -y
-
 RUN pip install -qU langchain_milvus
+RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel pypdf -y
 
 # Set environment variables for StreamLit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
