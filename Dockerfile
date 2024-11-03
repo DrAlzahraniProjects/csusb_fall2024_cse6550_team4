@@ -41,6 +41,13 @@ RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub matplotlib scikit-
 # Install additional required libraries
 RUN pip install -qU langchain_milvus
 
+# Install necessary Python packages
+RUN /opt/conda/envs/team4_env/bin/pip install roman
+# Install necessary Python packages
+RUN /opt/conda/envs/team4_env/bin/pip install roman pypdf
+
+
+
 # Add the necessary dependencies
 RUN apt-get update && apt-get install -y \
     g++ \
