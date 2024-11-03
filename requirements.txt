@@ -9,9 +9,7 @@ langchain-mistralai
 sentence-transformers
 faiss-cpu
 transformers
-huggingface-hub
-matplotlib-pyplot
+matplotlib
 numpy
 plotly
-sklearn
-
+scikit-learn
