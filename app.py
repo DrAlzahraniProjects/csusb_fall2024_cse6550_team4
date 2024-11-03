@@ -8,6 +8,7 @@ from statistics_chatbot import (
     reset_statistics
 )
 from bot import query_rag, initialize_milvus
+from streamlit_pdf_viewer import pdf_viewer
 
 # Set page config for wide layout
 st.set_page_config(page_title="Team4 Chatbot", layout="wide")
@@ -135,3 +136,28 @@ if st.button('Compute Metrics'):
 if st.button('Reset Statistics'):
     reset_statistics()
     st.success("Statistics reset successfully.")
+
+def serve_pdf():
+    """Used to open PDF file when a citation is clicked"""
+    pdf_path = st.query_params.get("file")
+
+    page = max(int(st.query_params.get("page", 1)), 1)
+    adjusted_page = page
+        
+    if pdf_path:
+        if os.path.exists(pdf_path):
+            with st.spinner(f"Loading page {adjusted_page} of the textbook..."):
+                pdf_viewer(
+                    pdf_path,
+                    width=700,
+                    height=1000,
+                    pages_to_render=[page],
+                    scroll_to_page=page,
+                    render_text=True
+                )
+        else:
+            st.error(f"PDF file not found at {pdf_path}")
+    else:
+        st.error("No PDF file specified in query parameters")
+if "view" in st.query_params and st.query_params["view"] == "pdf":
+        serve_pdf()
