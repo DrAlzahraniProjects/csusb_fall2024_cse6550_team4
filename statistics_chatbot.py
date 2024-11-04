@@ -1,6 +1,9 @@
 from datetime import datetime
 import numpy as np
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from statistics_backend import reset_confusion_matrix, get_confusion_matrix
+import streamlit as st
+import plotly.graph_objects as go
 
 # Initialize statistics dictionary
 statistics = {
@@ -93,3 +96,95 @@ def reset_statistics():
         "daily_statistics": {},
         "confusion_matrix": None
     }
+
+def display_confusion_matrix():
+    """Display confusion matrix and evaluation metrics"""
+    st.sidebar.markdown("<h1 class='title-stat'>Evaluation Report</h1>", unsafe_allow_html=True)
+
+    # Get confusion matrix and metrics
+    results = get_confusion_matrix()
+    matrix = results['matrix']
+    metrics = results['metrics']
+
+    # Confusion Matrix
+    z = [
+        [matrix['fp'], matrix['tn']],
+        [matrix['tp'], matrix['fn']],
+    ]
+    is_null = all(val == 0 for row in z for val in row) # check if values in matrix are all 0
+
+    text = [
+        ["FP: " + str(matrix['fp']), "TN: " + str(matrix['tn'])],
+        ["TP: " + str(matrix['tp']), "FN: " + str(matrix['fn'])]
+        
+    ]
+    tooltips = [
+        [
+            "False Positive:<br>The chatbot answers an unanswerable question.",
+            "True Negative:<br>The chatbot does not answer an unanswerable question."
+        ],
+        [
+            "True Positive:<br>The chatbot correctly answers an answerable question.",
+            "False Negative:<br>The chatbot incorrectly answers an answerable question."
+        ]
+    ]
+    colorscale = 'Whites' if is_null else 'Blues'
+    fig = go.Figure(data=go.Heatmap(
+        z=z,
+        x=['True', 'False'],
+        y=['False', 'True'],
+        text=text,
+        texttemplate="%{text}",
+        textfont={"size": 16},
+        showscale=False,
+        colorscale=[[0, 'white'], [1, 'white']] if is_null else 'Purples',
+        hoverongaps=False,
+        hoverinfo='text',
+        hovertext=tooltips
+    ))
+    fig.update_layout(
+        title='Confusion Matrix',
+        xaxis_title='Feedback',
+        yaxis_title='Answerable',
+        width=300,
+        height=300,
+        margin=dict(l=50, r=50, t=50, b=50)
+    )
+    st.sidebar.plotly_chart(fig, use_container_width=True)
+    
+    # Performance Metrics
+    st.sidebar.markdown("#### Performance Metrics")
+    metrics_display = f"""
+    <div class='metrics-container'>
+        <div class='metric-item'>
+            <span class='metric-label'>Sensitivity:</span>
+            <span class='metric-value'>{f"{metrics['Recall']:.2f}" if metrics['Recall'] is not None else "N/A"}</span>
+        </div>
+        <div class='metric-item'>
+            <span class='metric-label'>Specificity:</span>
+            <span class='metric-value'>{f"{metrics['Specificity']:.2f}" if metrics['Specificity'] is not None else "N/A"}</span>
+        </div>
+        <div class='metric-item'>
+            <span class='metric-label'>Accuracy:</span>
+            <span class='metric-value'>{f"{metrics['Accuracy']:.2f}" if metrics['Accuracy'] is not None else "N/A"}</span>
+        </div>
+        <div class='metric-item'>
+            <span class='metric-label'>Precision:</span>
+            <span class='metric-value'>{f"{metrics['Precision']:.2f}" if metrics['Precision'] is not None else "N/A"}</span>
+        </div>
+        <div class='metric-item'>
+            <span class='metric-label'>Recall:</span>
+            <span class='metric-value'>{f"{metrics['Recall']:.2f}" if metrics['Recall'] is not None else "N/A"}</span>
+        </div>
+        <div class='metric-item'>
+            <span class='metric-label'>F1 Score:</span>
+            <span class='metric-value'>{f"{metrics['F1']:.2f}" if metrics['F1'] is not None else "N/A"}</span>
+        </div>
+    </div>
+    """
+    st.sidebar.markdown(metrics_display, unsafe_allow_html=True)
+
+    # Reset button
+    if st.sidebar.button("Reset"):
+        reset_confusion_matrix()
+        st.rerun() 

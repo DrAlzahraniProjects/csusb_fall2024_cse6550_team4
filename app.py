@@ -5,7 +5,8 @@ from statistics_chatbot import (
     update_statistics, 
     get_statistics_display, 
     compute_metrics, 
-    reset_statistics
+    reset_statistics,
+    display_confusion_matrix
 )
 from bot import query_rag, initialize_milvus
 from streamlit_pdf_viewer import pdf_viewer
@@ -64,7 +65,7 @@ def handle_user_input(user_input):
 
     # Update statistics based on user input and bot response
     update_statistics(user_input, bot_response, response_time, correct_answer, is_new_question=True)
-
+    
 
 def serve_pdf():
     """Used to open PDF file when a citation is clicked"""
@@ -113,7 +114,7 @@ else:
 
     # Get current statistics for display
     current_stats = get_statistics_display()
-
+    display_confusion_matrix()
     # Sidebar 10 statistics (from current_stats)
     for key, value in current_stats.items():
         st.sidebar.markdown(f'<div class="question-box">{key}: {value}</div>', unsafe_allow_html=True)

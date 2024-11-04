@@ -15,3 +15,5 @@ plotly
 scikit-learn
 ipykernel
 roman
+sqlalchemy
+yake
