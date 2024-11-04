@@ -15,13 +15,15 @@ from pymilvus import connections, utility
 from requests.exceptions import HTTPError
 from httpx import HTTPStatusError
 from data import CORPUS_SOURCE
+from langchain_community.document_loaders import PyPDFDirectoryLoader
+from roman import toRoman
 
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
 MILVUS_URI = "./milvus/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-
+data_dir = "./volumes"
 
 def get_embedding_function():
     """
@@ -32,6 +34,17 @@ def get_embedding_function():
     """
     embedding_function = HuggingFaceEmbeddings(model_name=MODEL_NAME)
     return embedding_function
+
+
+def load_pdfs(data_dir):
+    loader = PyPDFDirectoryLoader(data_dir)
+    documents = loader.load()
+    for doc in documents:
+        if "paper1.pdf" in doc.metadata["source"]:
+            doc.metadata["source"] = "https://dl.acm.org/doi/10.1145/3597503.3649398"
+        elif "paper2.pdf" in doc.metadata["source"]:
+            doc.metadata["source"] = "https://dl.acm.org/doi/10.1145/3597503.3649399"
+    return documents
 
 
 def query_rag(query):
@@ -48,7 +61,7 @@ def query_rag(query):
         str: The answer to the query
     """
     # Define the model
-    model = ChatMistralAI(model='open-mistral-7b')
+    model = ChatMistralAI(model='open-mistral-7b',api_key=MISTRAL_API_KEY)
     print("Model Loaded")
 
     prompt = create_prompt()
@@ -73,25 +86,26 @@ def query_rag(query):
         return f"HTTPStatusError: {e}", [] 
     
     # logic to add sources to the response
-    max_relevant_sources = 4 # number of sources at most to be added to the response
-    all_sources = ""
-    sources = []
-    count = 1
-    for i in range(max_relevant_sources):
-        try:
-            source = response["context"][i].metadata["source"]
-            # check if the source is already added to the list
-            if source not in sources:
-                sources.append(source)
-                all_sources += f"[Source {count}]({source}), "
-                count += 1
-        except IndexError: # if there are no more sources to add
-            break
-    all_sources = all_sources[:-2] # remove the last comma and space
-    response["answer"] += f"\n\nSources: {all_sources}"
-    print("Response Generated")
+    # max_relevant_sources = 4 # number of sources at most to be added to the response
+    # all_sources = ""
+    # sources = []
+    # count = 1
+    # for i in range(max_relevant_sources):
+    #     try:
+    #         source = response["context"][i].metadata["source"]
+    #         # check if the source is already added to the list
+    #         if source not in sources:
+    #             sources.append(source)
+    #             all_sources += f"[Source {count}]({source}), "
+    #             count += 1
+    #     except IndexError: # if there are no more sources to add
+    #         break
+    # all_sources = all_sources[:-2] # remove the last comma and space
+    # response["answer"] += f"\n\nSources: {all_sources}"
+    # print("Response Generated")
 
-    return response["answer"], sources
+    # return response["answer"], sources
+    return get_answer_with_source(response)
 
 
 
@@ -141,7 +155,8 @@ def initialize_milvus(uri: str=MILVUS_URI):
     """
     embeddings = get_embedding_function()
     print("Embeddings Loaded")
-    documents = load_documents_from_web()
+    # documents = load_documents_from_web()
+    documents = load_pdfs(data_dir)
     print("Documents Loaded")
     print(len(documents))
 
@@ -264,6 +279,39 @@ def load_exisiting_db(uri=MILVUS_URI):
     print("Vector Store Loaded")
     return vector_store
 
+def get_answer_with_source(response):
+  """
+  Extract the answer and relevant source information from the response.
+  This function processes the response from the RAG chain, extracting the answer
+  and up to 5 source references (page numbers) from the context documents.
+
+  Args:
+    response (dict): The response dictionary from the RAG chain, containing 'answer' and 'context' keys.
+  Returns:
+    str: A formatted string containing the answer followed by source information.
+  """
+#   pdf_path = "./volumes"
+  answer = response.get('answer', 'No answer found.') # Extract the answer
+  sources = [] # Handle multiple contexts in the response (assuming response['context'] is a list)
+  # Iterate over context documents and get top 5 sources
+  for doc in response.get("context", [])[:5]:
+    page = doc.metadata.get('page', 'Unknown page')
+    print(page)
+    source_pdf = doc.metadata.get('source', '').split('/')[-1]  # Get only the file name from the path
+    print(source_pdf,flush=True)
+        # Adjust the page index and create a link to open the PDF at a specific page
+    if page != 'Unknown page':
+            # page += 1  # Adjust to be 1-based indexing if necessary
+            link = f'<a href="/team4/?view=pdf&file={data_dir}/{source_pdf}&page={page + 1}" target="_blank">[{page + 1}]</a>'
+            # link = f"[Page {page} in {source_pdf}](/team4/?view=pdf&file={data_dir}/{source_pdf}&page={page})"
+    else:
+            link = f"[Source: {source_pdf}]"
+
+    sources.append(link)
+
+    # Format all sources with Markdown-compatible newline breaks
+    sources_info = "\n\nSources:\n" + "\n".join(sources)
+    return f"{answer}\n\n{sources_info}"
+
 if __name__ == '__main__':
     pass
-

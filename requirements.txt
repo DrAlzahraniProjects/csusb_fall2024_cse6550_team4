@@ -1,4 +1,5 @@
 streamlit
+pandas
 jupyter
 langchain
 langchain-community
@@ -8,4 +9,9 @@ langchain-mistralai
 sentence-transformers
 faiss-cpu
 transformers
-huggingface-hub
+matplotlib
+numpy
+plotly
+scikit-learn
+ipykernel
+roman
