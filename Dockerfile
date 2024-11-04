@@ -36,26 +36,27 @@ ARG CONDA_AUTO_UPDATE_CONDA=false
 RUN mamba install --name team4_env --yes --file requirements.txt && mamba clean --all -f -y
 
 # Use pip for packages not available in conda-forge
-# RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub matplotlib scikit-learn
+RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub matplotlib scikit-learn
 
-# RUN source activate team4_env && mamba install --yes \
-#     streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters langchain-mistralai faiss-cpu roman transformers && \
-#     mamba clean --all -f -y
+RUN source activate team4_env && mamba install --yes \
+     streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters langchain-mistralai faiss-cpu roman transformers && \
+     mamba clean --all -f -y
+     
 # # Install additional required libraries
 RUN pip install -qU langchain_milvus
 
-# Add the necessary dependencies
-# RUN apt-get update && apt-get install -y \
-#     g++ \
-#     build-essential \
-#     cmake \
-#     && apt-get clean
+#Add the necessary dependencies
+RUN apt-get update && apt-get install -y \
+    g++ \
+    build-essential \
+    cmake \
+    && apt-get clean
 
-# # Install Cython, which is required by some NeMo dependencies
-# RUN /opt/conda/envs/team4_env/bin/pip install cython
+# Install Cython, which is required by some NeMo dependencies
+RUN /opt/conda/envs/team4_env/bin/pip install cython
 
-# # Install NeMo toolkit, including NeMo Curator
-# RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
+# Install NeMo toolkit, including NeMo Curator
+RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
 
 RUN pip install streamlit-pdf-viewer
 RUN pip install pypdf
