@@ -44,6 +44,7 @@ RUN source activate team4_env && mamba install --yes \
 RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub
 
 RUN pip install -qU langchain_milvus
+RUN pip install streamlit-pdf-viewer
 RUN source activate team4_env && mamba install -c conda-forge jupyter ipykernel pypdf -y
 
 # Set environment variables for StreamLit
