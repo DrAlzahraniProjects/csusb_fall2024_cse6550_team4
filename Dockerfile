@@ -41,6 +41,15 @@ RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub matplotlib scikit-
 # Install additional required libraries
 RUN pip install -qU langchain_milvus
 
+
+
+# Install compatible versions
+
+RUN /opt/conda/envs/team4_env/bin/pip install nbclient==0.5.13
+
+RUN /opt/conda/envs/team4_env/bin/pip install notebook==6.5.4 jupyter_server==1.13.5 traitlets==5.1.1
+
+
 # Install necessary Python packages
 RUN /opt/conda/envs/team4_env/bin/pip install roman
 # Install necessary Python packages
@@ -64,6 +73,9 @@ RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
 # Set environment variables for Nemo
 ENV NEMO_DATA_PATH=/data
 ENV CURATOR_CONFIG=/app/curator_config.yaml
+
+ENV JUPYTER_BROWSER_GATHER_USAGE_STATS="false"
+
 
 # Set environment variables for Streamlit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
