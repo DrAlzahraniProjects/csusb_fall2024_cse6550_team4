@@ -298,12 +298,12 @@ def get_answer_with_source(response):
     page = doc.metadata.get('page', 'Unknown page')
     print(page)
     source_pdf = doc.metadata.get('source', '').split('/')[-1]  # Get only the file name from the path
-
+    print(source_pdf,flush=True)
         # Adjust the page index and create a link to open the PDF at a specific page
     if page != 'Unknown page':
-            page += 1  # Adjust to be 1-based indexing if necessary
-            #link = f'<a href="/team4/?view=pdf&file={pdf_path}&page={page + 1}" target="_blank">[{page + 1}]</a>'
-            link = f"[Page {page} in {source_pdf}](/team4/?view=pdf&file={data_dir}/{source_pdf}&page={page})"
+            # page += 1  # Adjust to be 1-based indexing if necessary
+            link = f'<a href="/team4/?view=pdf&file={data_dir}/{source_pdf}&page={page + 1}" target="_blank">[{page + 1}]</a>'
+            # link = f"[Page {page} in {source_pdf}](/team4/?view=pdf&file={data_dir}/{source_pdf}&page={page})"
     else:
             link = f"[Source: {source_pdf}]"
 
@@ -315,4 +315,3 @@ def get_answer_with_source(response):
 
 if __name__ == '__main__':
     pass
-

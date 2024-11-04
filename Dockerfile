@@ -70,6 +70,8 @@ RUN /opt/conda/envs/team4_env/bin/pip install cython
 # Install NeMo toolkit, including NeMo Curator
 RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
 
+RUN pip install streamlit-pdf-viewer
+
 # Set environment variables for Nemo
 ENV NEMO_DATA_PATH=/data
 ENV CURATOR_CONFIG=/app/curator_config.yaml
@@ -83,6 +85,8 @@ ENV STREAMLIT_SERVER_PORT=5004
 
 # Copy the application files into the container
 COPY . /app
+
+
 
 # Copy the config file for curator
 COPY curator_config.yaml /app/curator_config.yaml
