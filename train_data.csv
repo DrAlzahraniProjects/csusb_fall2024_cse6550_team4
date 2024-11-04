@@ -1,0 +1,8 @@
+
+text,label
+"This is a positive review of the product.",positive
+"I had a terrible experience with this service.",negative
+"Great value for the price.",positive
+"Will not buy again.",negative
+"Highly recommend this to everyone!",positive
+"Poor quality, very disappointed.",negative
