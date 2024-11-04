@@ -13,3 +13,5 @@ matplotlib
 numpy
 plotly
 scikit-learn
+ipykernel
+roman

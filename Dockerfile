@@ -36,48 +36,34 @@ ARG CONDA_AUTO_UPDATE_CONDA=false
 RUN mamba install --name team4_env --yes --file requirements.txt && mamba clean --all -f -y
 
 # Use pip for packages not available in conda-forge
-RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub matplotlib scikit-learn
+# RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub matplotlib scikit-learn
 
-# Install additional required libraries
+# RUN source activate team4_env && mamba install --yes \
+#     streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters langchain-mistralai faiss-cpu roman transformers && \
+#     mamba clean --all -f -y
+# # Install additional required libraries
 RUN pip install -qU langchain_milvus
 
-
-
-# Install compatible versions
-
-RUN /opt/conda/envs/team4_env/bin/pip install nbclient==0.5.13
-
-RUN /opt/conda/envs/team4_env/bin/pip install notebook==6.5.4 jupyter_server==1.13.5 traitlets==5.1.1
-
-
-# Install necessary Python packages
-RUN /opt/conda/envs/team4_env/bin/pip install roman
-# Install necessary Python packages
-RUN /opt/conda/envs/team4_env/bin/pip install roman pypdf
-
-
-
 # Add the necessary dependencies
-RUN apt-get update && apt-get install -y \
-    g++ \
-    build-essential \
-    cmake \
-    && apt-get clean
+# RUN apt-get update && apt-get install -y \
+#     g++ \
+#     build-essential \
+#     cmake \
+#     && apt-get clean
 
-# Install Cython, which is required by some NeMo dependencies
-RUN /opt/conda/envs/team4_env/bin/pip install cython
+# # Install Cython, which is required by some NeMo dependencies
+# RUN /opt/conda/envs/team4_env/bin/pip install cython
 
-# Install NeMo toolkit, including NeMo Curator
-RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
+# # Install NeMo toolkit, including NeMo Curator
+# RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
 
 RUN pip install streamlit-pdf-viewer
+RUN pip install pypdf
 
 # Set environment variables for Nemo
-ENV NEMO_DATA_PATH=/data
-ENV CURATOR_CONFIG=/app/curator_config.yaml
-
-ENV JUPYTER_BROWSER_GATHER_USAGE_STATS="false"
-
+# ENV NEMO_DATA_PATH=/data
+# ENV CURATOR_CONFIG=/app/curator_config.yaml
+# ENV JUPYTER_BROWSER_GATHER_USAGE_STATS="false"
 
 # Set environment variables for Streamlit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
@@ -88,8 +74,8 @@ COPY . /app
 
 
 
-# Copy the config file for curator
-COPY curator_config.yaml /app/curator_config.yaml
+# # Copy the config file for curator
+# COPY curator_config.yaml /app/curator_config.yaml
 
 # Expose ports for Streamlit and Jupyter
 EXPOSE 5004
