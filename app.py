@@ -24,6 +24,8 @@ if 'chat_history' not in st.session_state:
 
 # Function to clean up repeated text in the response
 def clean_repeated_text(text):
+    if text is None:
+        return ""
     sentences = text.split('. ')
     seen = set()
     cleaned_sentences = []
@@ -116,8 +118,8 @@ else:
     current_stats = get_statistics_display()
     display_confusion_matrix()
     # Sidebar 10 statistics (from current_stats)
-    for key, value in current_stats.items():
-        st.sidebar.markdown(f'<div class="question-box">{key}: {value}</div>', unsafe_allow_html=True)
+    # for key, value in current_stats.items():
+    #     st.sidebar.markdown(f'<div class="question-box">{key}: {value}</div>', unsafe_allow_html=True)
 
     # Display the confusion matrix in sidebar
     if "confusion_matrix" in current_stats:

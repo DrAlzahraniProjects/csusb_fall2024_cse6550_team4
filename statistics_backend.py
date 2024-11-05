@@ -218,3 +218,4 @@ def get_confusion_matrix():
                 'F1': f1
             }
         }
+
