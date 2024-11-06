@@ -15,3 +15,4 @@ plotly
 scikit-learn
 ipykernel
 roman
+yake

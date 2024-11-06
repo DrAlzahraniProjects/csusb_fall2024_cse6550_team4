@@ -1,12 +1,17 @@
 import streamlit as st
 import os
+import time
 import numpy as np
 from statistics_chatbot import (
     update_statistics, 
     get_statistics_display, 
-    compute_metrics, 
-    reset_statistics
+    get_confusion_matrix,
+    reset_confusion_matrix,
+    init_user_session,
+    insert_conversation,
+    update_user_session
 )
+from questions import baseline_questions, search_questions, display_confusion_matrix, handle_feedback
 from bot import query_rag, initialize_milvus
 from streamlit_pdf_viewer import pdf_viewer
 
@@ -20,155 +25,159 @@ css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
+# Initialize user session if not already set
+if 'user_id' not in st.session_state:
+    st.session_state.user_id = init_user_session()
+
+# Load the CSS file and apply the styles
+with open(css_file_path) as f:
+    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+# Team4 Chatbot Heading
+st.title("Team4 Chatbot")
+
+# Sidebar header for static report metrics
+st.sidebar.header("10 Statistics Report")
 
 # Function to clean up repeated text in the response
 def clean_repeated_text(text):
+    if text is None:
+        return ''
     sentences = text.split('. ')
     seen = set()
     cleaned_sentences = []
-    
     for sentence in sentences:
         if sentence not in seen:
             cleaned_sentences.append(sentence)
             seen.add(sentence)
-    
     return '. '.join(cleaned_sentences)
+
+# Display function for the confusion matrix with dynamic feedback handling
+def display_confusion_matrix_sidebar():
+    """Display confusion matrix and metrics in the sidebar, updating dynamically with feedback."""
+    st.sidebar.write("Confusion Matrix:")
+
+    # Re-fetch the confusion matrix and metrics after any feedback updates
+    results = get_confusion_matrix()
+    matrix = results['matrix']
+    metrics = results['metrics']
+
+    # Display the confusion matrix in a table
+    st.sidebar.table(matrix)
+
+    # Display each metric with a conditional check for None values
+    st.sidebar.write("Metrics:")
+    for key, value in metrics.items():
+        metric_value = f"{value:.2f}" if value is not None else "N/A"
+        st.sidebar.write(f"{key}: {metric_value}")
+
+# Function to handle feedback dynamically and update the confusion matrix
+def handle_feedback1(feedback_value):
+    """Handle feedback and update the confusion matrix."""
+    # Determine correctness based on feedback
+    correct_answer = feedback_value == "thumbs_up"
+
+    # Check if chat_history has enough entries to fetch user input and bot response
+    if len(st.session_state.chat_history) >= 2:
+        # Retrieve the most recent user input and bot response from the session state
+        user_input = st.session_state.chat_history[-2]["content"]  # Second-to-last entry (user input)
+        bot_response = st.session_state.chat_history[-1]["content"]  # Last entry (bot response)
+    else:
+        # Handle the case where there aren't enough chat history entries
+        st.warning("Insufficient chat history to provide feedback.")
+        return
+
+    # Assuming you can calculate or track response time from the session state
+    # If you track response time in the session state, fetch it
+    response_time = st.session_state.get("last_response_time", 0)  # Use the value from session if available
+
+    # Update the statistics
+    update_statistics(user_input=user_input, bot_response=bot_response, response_time=response_time, correct_answer=correct_answer, is_new_question=False)
+
+    # Trigger an update to the confusion matrix
+    display_confusion_matrix()
+
+
 
 # Function to handle user input
 def handle_user_input(user_input):
-    import time
     start_time = time.time()
-    
-    # Append user input to chat history
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
 
-    # Display chat history immediately (user's question)
+    # Append user input to chat history and display it
+    st.session_state.chat_history.append({"role": "user", "content": user_input})
     st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
 
-    # Display "Response Generating" message
+    # Generate bot response and calculate response time
     with st.spinner("Response Generating, please wait..."):
-        # Get the chatbot response and citations from backend
-        # bot_response, citations = query_rag(user_input)
         bot_response = query_rag(user_input)
         cleaned_response = clean_repeated_text(bot_response)
-        # full_response = cleaned_response + (f"\n\nReferences: {citations}" if citations else "")
 
-    # Add the combined bot response to chat history
+    # Append the bot response to chat history
     st.session_state.chat_history.append({"role": "bot", "content": cleaned_response})
+    st.markdown(f"<div class='bot-message'>{cleaned_response}</div>", unsafe_allow_html=True)
 
-    # Calculate the response time
+    # Calculate response time and update statistics
     response_time = time.time() - start_time
+    update_statistics(user_input, bot_response, response_time, correct_answer=None, is_new_question=True)
 
-    # Determine if the answer is correct (placeholder logic)
-    correct_answer = True  # Replace this with actual logic
-
-    # Update statistics based on user input and bot response
-    update_statistics(user_input, bot_response, response_time, correct_answer, is_new_question=True)
-
-
+# Serve PDF function for displaying PDF when citation is clicked
 def serve_pdf():
-    """Used to open PDF file when a citation is clicked"""
     pdf_path = st.query_params.get("file")
-
     page = max(int(st.query_params.get("page", 1)), 1)
-    adjusted_page = page
-        
-    if pdf_path:
-        if os.path.exists(pdf_path):
-            with st.spinner(f"Loading page..."):
-                col1, col2, col3 = st.columns([1, 2, 1])  # Adjust ratios as needed
-
-                with col2:
-                    # Place your PDF viewer here
-                    pdf_viewer(
-                        pdf_path,
-                        width=2000,  # Width in pixels; you can leave it as is since CSS will control scaling
-                        height=1000,
-                        pages_to_render=[],
-                        render_text=True
-                    )
-                    
-        else:
-            st.error(f"PDF file not found at {pdf_path}")
+    if pdf_path and os.path.exists(pdf_path):
+        with st.spinner("Loading page..."):
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                pdf_viewer(pdf_path, width=2000, height=1000, pages_to_render=[], render_text=True)
     else:
-        st.error("No PDF file specified in query parameters")
+        st.error("PDF file not found or no file specified.")
 
-
-
-
-if "view" in st.query_params and st.query_params["view"] == "pdf":
+# Main application logic
+if __name__ == "__main__":
+    # Load chat interface if not in PDF view
+    if "view" in st.query_params and st.query_params["view"] == "pdf":
         serve_pdf()
-else:
-    # Load the CSS file and apply the styles
-    with open(css_file_path) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-
-    # Team4 Chatbot Heading
-    st.title("Team4 Chatbot")
-
-    # Sidebar header for static report metrics
-    st.sidebar.header("10 Statistics Report")
-    # Display the chat input box first
-    user_input = st.chat_input("Message writing assistant", key='chat_input')
-
-    # Get current statistics for display
-    current_stats = get_statistics_display()
-
-    # Sidebar 10 statistics (from current_stats)
-    for key, value in current_stats.items():
-        st.sidebar.markdown(f'<div class="question-box">{key}: {value}</div>', unsafe_allow_html=True)
-
-    # Display the confusion matrix in sidebar
-    if "confusion_matrix" in current_stats:
-        st.sidebar.write("Confusion Matrix:")
-        st.sidebar.table(current_stats["confusion_matrix"])
-
-    if 'conversation' not in st.session_state:
-        st.session_state['conversation'] = []
-        with st.spinner("Initializing, Please Wait..."):
-            vector_store = initialize_milvus()
-
-    # Process input if user has entered a message
-    if user_input:
-        handle_user_input(user_input)
-
-    # After response generation, render chat history including both user and bot messages
-    for message in st.session_state.chat_history:
-        if message['role'] == 'user':
-            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
-
-    # Handle feedback with thumbs-up and thumbs-down
-    feedback = st.radio("Did this answer help you?", ('👍', '👎'))
-    if feedback == '👍':
-        correct_answer = True
-        st.success("Thank you for your feedback!")
     else:
-        correct_answer = False
-        st.warning("We're sorry to hear that.")
+        # Display chat input box
+        user_input = st.chat_input("Message writing assistant", key='chat_input')
 
-    # Update statistics based on feedback
-    if feedback:
-        update_statistics("feedback", "feedback", 0, correct_answer, is_new_question=False)
+        # Display statistics in sidebar
+        current_stats = get_statistics_display()
+        for key, value in current_stats.items():
+            st.sidebar.markdown(f'<div class="question-box">{key}: {value}</div>', unsafe_allow_html=True)
 
-    # Compute metrics and display confusion matrix
-    if st.button('Compute Metrics'):
-        y_true = np.random.randint(0, 2, 100)  # Placeholder for actual labels
-        y_pred = np.random.randint(0, 2, 100)  # Placeholder for actual predictions
-        cm, metrics = compute_metrics(y_true, y_pred)
-        
-        if cm is not None:
-            st.write("Confusion Matrix:")
-            st.table(cm)
-            
-            # Display metrics
-            for metric_name, metric_value in metrics.items():
-                st.write(f"{metric_name}: {metric_value:.2f}")
+        # Display dynamic confusion matrix in sidebar
+        display_confusion_matrix()
 
-    # Reset statistics
-    if st.button('Reset Statistics'):
-        reset_statistics()
-        st.success("Statistics reset successfully.")
+        # Initialize Milvus if not already in session state
+        if 'vector_store' not in st.session_state:
+            with st.spinner("Initializing, please wait..."):
+                st.session_state.vector_store = initialize_milvus()
 
+        # Handle user input
+        if user_input:
+            handle_user_input(user_input)
+
+        # Render chat history
+        for message in st.session_state.chat_history:
+            role_class = 'user-message' if message['role'] == 'user' else 'bot-message'
+            st.markdown(f"<div class='{role_class}'>{message['content']}</div>", unsafe_allow_html=True)
+
+        # Handle feedback button click
+        feedback = st.radio("Did this answer help you?", ('👍', '👎'))
+        if feedback == '👍':
+            handle_feedback1("thumbs_up")
+            st.success("Thank you for your feedback!")
+        elif feedback == '👎':
+            handle_feedback1("thumbs_down")
+            st.warning("We're sorry to hear that.")
+
+    # Sidebar buttons for computing metrics and resetting statistics
+    if st.sidebar.button('Compute Metrics'):
+        display_confusion_matrix()
+
+    if st.sidebar.button('Reset Statistics'):
+        if st.sidebar.button("Confirm Reset", help="This will clear all data."):
+            reset_confusion_matrix()
+            st.success("Statistics reset successfully.")
 
