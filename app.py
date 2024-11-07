@@ -23,6 +23,8 @@ if 'chat_history' not in st.session_state:
 
 # Function to clean up repeated text in the response
 def clean_repeated_text(text):
+    if text is None:
+        return ""
     sentences = text.split('. ')
     seen = set()
     cleaned_sentences = []

@@ -4,9 +4,9 @@ FROM continuumio/miniconda3
 # Set the working directory
 WORKDIR /app
 
-# Install wget and required system dependencies
+# # Install wget and required system dependencies
 RUN apt-get update && apt-get install -y wget && apt-get clean
-RUN pip install --no-cache-dir streamlit matplotlib
+# RUN pip install --no-cache-dir matplotlib
 
 # Update conda to ensure the latest version
 RUN conda update -n base conda -y
@@ -35,12 +35,12 @@ COPY requirements.txt /app/requirements.txt
 ARG CONDA_AUTO_UPDATE_CONDA=false
 RUN mamba install --name team4_env --yes --file requirements.txt && mamba clean --all -f -y
 
-# Use pip for packages not available in conda-forge
-RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub matplotlib scikit-learn
+# # Use pip for packages not available in conda-forge
+# RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub scikit-learn numpy plotly
 
-RUN source activate team4_env && mamba install --yes \
-     streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters langchain-mistralai faiss-cpu roman transformers && \
-     mamba clean --all -f -y
+# RUN source activate team4_env && mamba install --yes \
+#      streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters langchain-mistralai faiss-cpu roman transformers && \
+#      mamba clean --all -f -y
      
 # # Install additional required libraries
 RUN pip install -qU langchain_milvus
@@ -52,14 +52,14 @@ RUN apt-get update && apt-get install -y \
     cmake \
     && apt-get clean
 
-# Install Cython, which is required by some NeMo dependencies
-RUN /opt/conda/envs/team4_env/bin/pip install cython
+# # Install Cython, which is required by some NeMo dependencies
+# RUN /opt/conda/envs/team4_env/bin/pip install cython
 
-# Install NeMo toolkit, including NeMo Curator
-RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
+# # Install NeMo toolkit, including NeMo Curator
+# RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
 
 RUN pip install streamlit-pdf-viewer
-RUN pip install pypdf
+# RUN pip install pypdf PyPDF2 matplotlib pandas
 
 # Set environment variables for Nemo
 # ENV NEMO_DATA_PATH=/data
@@ -84,11 +84,12 @@ EXPOSE 6004
 
 # Configure Jupyter Notebook settings
 RUN mkdir -p /root/.jupyter && \
-    echo "c.NotebookApp.allow_root = True" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.port = 6004" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.open_browser = False" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.token = ''" >> /root/.jupyter/jupyter_notebook_config.py
+    echo "c.ServerApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.port = 6004" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.open_browser = False" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.token = ''" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.password = ''" >> /root/.jupyter/jupyter_server_config.py
+
 
 # Start Streamlit and Jupyter
-CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"]
+CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --NotebookApp.base_url=/team4/jupyter --NotebookApp.token='' --NotebookApp.password=''"]

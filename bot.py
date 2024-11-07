@@ -1,4 +1,6 @@
 import os
+import pickle
+import uuid
 from dotenv import load_dotenv
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.schema import Document
@@ -17,6 +19,7 @@ from httpx import HTTPStatusError
 from data import CORPUS_SOURCE
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from roman import toRoman
+from PyPDF2 import PdfReader
 
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
@@ -25,27 +28,97 @@ MILVUS_URI = "./milvus/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 data_dir = "./volumes"
 
+CACHE_FILE = "./document_cache.pkl"
+
 def get_embedding_function():
+    return HuggingFaceEmbeddings(model_name=MODEL_NAME)
+
+def load_pdfs_in_batches(data_dir, batch_size=20):
     """
-    returns embedding function for the model
-
-    Returns:
-        embedding function
+    Load PDFs in batches to avoid memory overload.
+    If a cache file exists, load previously processed files from it and only process new files.
     """
-    embedding_function = HuggingFaceEmbeddings(model_name=MODEL_NAME)
-    return embedding_function
+    documents = []
+    file_list = [f for f in os.listdir(data_dir) if f.endswith(".pdf")]
+    processed_files = {}
 
+    # Load the cache if it exists
+    if os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, "rb") as cache_file:
+            processed_files = pickle.load(cache_file)
+        print("Loaded processed files from cache.")
 
-def load_pdfs(data_dir):
-    loader = PyPDFDirectoryLoader(data_dir)
-    documents = loader.load()
-    for doc in documents:
-        if "paper1.pdf" in doc.metadata["source"]:
-            doc.metadata["source"] = "https://dl.acm.org/doi/10.1145/3597503.3649398"
-        elif "paper2.pdf" in doc.metadata["source"]:
-            doc.metadata["source"] = "https://dl.acm.org/doi/10.1145/3597503.3649399"
-    return documents
+    new_files = [f for f in file_list if f not in processed_files]
 
+    # Process new files in batches
+    for i in range(0, len(new_files), batch_size):
+        batch_files = new_files[i:i + batch_size]
+        
+        for filename in batch_files:
+            pdf_path = os.path.join(data_dir, filename)
+            reader = PdfReader(pdf_path)
+
+            for page_num, page in enumerate(reader.pages):
+                text = page.extract_text() or ""
+                unique_id = str(uuid.uuid4())
+                documents.append(Document(page_content=text, metadata={"source": pdf_path, "page": page_num + 1, "id": unique_id}))
+
+            # Mark the file as processed
+            processed_files[filename] = True
+
+        # Save the updated cache after processing each batch
+        with open(CACHE_FILE, "wb") as cache_file:
+            pickle.dump(processed_files, cache_file)
+        print(f"Processed and cached batch {i // batch_size + 1}/{len(new_files) // batch_size + 1}")
+
+        yield documents
+        documents = []  # Clear batch after yield
+
+    if not new_files:
+        print("No new files to process.")
+
+def split_documents(documents):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=2000,
+        chunk_overlap=200,
+    )
+    return text_splitter.split_documents(documents)
+
+def create_vector_store(docs, embeddings, uri):
+    os.makedirs(os.path.dirname(uri), exist_ok=True)
+    connections.connect("default", uri=uri)
+
+    if utility.has_collection("research_paper_chatbot"):
+        print("Loading existing collection...")
+        vector_store = Milvus(
+            collection_name="research_paper_chatbot",
+            embedding_function=embeddings,
+            connection_args={"uri": uri}
+            
+        )
+    else:
+        vector_store = Milvus.from_documents(
+            documents=docs,
+            embedding=embeddings,
+            collection_name="research_paper_chatbot",
+            connection_args={"uri": uri},
+            drop_old=True,
+        )
+    return vector_store
+
+def initialize_milvus(uri=MILVUS_URI):
+    embeddings = get_embedding_function()
+    vector_store = None
+
+    for documents in load_pdfs_in_batches(data_dir):
+        docs = split_documents(documents)
+        if vector_store is None:
+            vector_store = create_vector_store(docs, embeddings, uri)
+        else:
+            vector_store.add_documents(docs)
+
+    print("Vector store initialization complete.")
+    return vector_store
 
 def query_rag(query):
     """
@@ -84,27 +157,7 @@ def query_rag(query):
             return "I am currently experiencing high traffic. Please try again later.", []
         #return "I am unable to answer this question at the moment. Please try again later.", []
         return f"HTTPStatusError: {e}", [] 
-    
-    # logic to add sources to the response
-    # max_relevant_sources = 4 # number of sources at most to be added to the response
-    # all_sources = ""
-    # sources = []
-    # count = 1
-    # for i in range(max_relevant_sources):
-    #     try:
-    #         source = response["context"][i].metadata["source"]
-    #         # check if the source is already added to the list
-    #         if source not in sources:
-    #             sources.append(source)
-    #             all_sources += f"[Source {count}]({source}), "
-    #             count += 1
-    #     except IndexError: # if there are no more sources to add
-    #         break
-    # all_sources = all_sources[:-2] # remove the last comma and space
-    # response["answer"] += f"\n\nSources: {all_sources}"
-    # print("Response Generated")
 
-    # return response["answer"], sources
     return get_answer_with_source(response)
 
 
@@ -141,123 +194,6 @@ def create_prompt():
     print("Prompt Created")
 
     return prompt
-
-
-def initialize_milvus(uri: str=MILVUS_URI):
-    """
-    Initialize the vector store for the RAG model
-
-    Args:
-        uri (str, optional): Path to the local milvus db. Defaults to MILVUS_URI.
-
-    Returns:
-        vector_store: The vector store created
-    """
-    embeddings = get_embedding_function()
-    print("Embeddings Loaded")
-    # documents = load_documents_from_web()
-    documents = load_pdfs(data_dir)
-    print("Documents Loaded")
-    print(len(documents))
-
-    # Split the documents into chunks
-    docs = split_documents(documents=documents)
-    print("Documents Splitting completed")
-
-    vector_store = create_vector_store(docs, embeddings, uri)
-
-    return vector_store
-
-
-def load_documents_from_web():
-    """
-    Load the documents from the web and store the page contents
-
-    Returns:
-        list: The documents loaded from the web
-    """
-    # loader = RecursiveUrlLoader(
-    #     url=CORPUS_SOURCE,
-    #     prevent_outside=True,
-    #     base_url=CORPUS_SOURCE
-    # )
-    documents = []
-    for url in CORPUS_SOURCE:
-        loader = WebBaseLoader(url)
-        try:
-            loaded_docs = loader.load()
-            documents.extend(loaded_docs)  # Add loaded documents to the main list
-            print(f"Documents loaded from {url}")
-        except Exception as e:
-            print(f"Failed to load documents from {url}: {e}")
-
-    # loader = WebBaseLoader(CORPUS_SOURCE)
-    # documents = loader.load()
-    
-    return documents
-
-def split_documents(documents):
-    """
-    Split the documents into chunks
-
-    Args:
-        documents (list): The documents to split
-
-    Returns:
-        list: list of chunks of documents
-    """
-    # Create a text splitter to split the documents into chunks
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=2000,  # Split the text into chunks of 1000 characters
-        chunk_overlap=200,  # Overlap the chunks by 300 characters
-        is_separator_regex=False,  # Don't split on regex
-    )
-    # Split the documents into chunks
-    docs = text_splitter.split_documents(documents)
-    return docs
-
-
-def create_vector_store(docs, embeddings, uri):
-    """
-    This function initializes a vector store using the provided documents and embeddings.
-    It connects to a local Milvus database specified by the URI. If a collection named "IT_support" already exists,
-    it loads the existing vector store; otherwise, it creates a new vector store and drops any existing one.
-
-    Args:
-        docs (list): A list of documents to be stored in the vector store.
-        embeddings : A function or model that generates embeddings for the documents.
-        uri (str): Path to the local milvus db
-
-    Returns:
-        vector_store: The vector store created
-    """
-    # Create the directory if it does not exist
-    head = os.path.split(uri)
-    os.makedirs(head[0], exist_ok=True)
-
-    # Connect to the Milvus database
-    connections.connect("default",uri=uri)
-
-    # Check if the collection already exists
-    if utility.has_collection("research_paper_chatbot"):
-        print("Collection already exists. Loading existing Vector Store.")
-        # loading the existing vector store
-        vector_store = Milvus(
-            collection_name="research_paper_chatbot",
-            embedding_function=get_embedding_function(),
-            connection_args={"uri": uri}
-        )
-    else:
-        # Create a new vector store and drop any existing one
-        vector_store = Milvus.from_documents(
-            documents=docs,
-            embedding=embeddings,
-            collection_name="research_paper_chatbot",
-            connection_args={"uri": uri},
-            drop_old=True,
-        )
-        print("Vector Store Created")
-    return vector_store
 
 
 def load_exisiting_db(uri=MILVUS_URI):
