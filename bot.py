@@ -93,7 +93,8 @@ def create_vector_store(docs, embeddings, uri):
         vector_store = Milvus(
             collection_name="research_paper_chatbot",
             embedding_function=embeddings,
-            connection_args={"uri": uri}
+            connection_args={"uri": uri},
+            auto_id=True
             
         )
     else:
@@ -103,6 +104,7 @@ def create_vector_store(docs, embeddings, uri):
             collection_name="research_paper_chatbot",
             connection_args={"uri": uri},
             drop_old=True,
+            auto_id=True
         )
     return vector_store
 

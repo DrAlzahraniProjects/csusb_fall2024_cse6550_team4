@@ -88,7 +88,8 @@ RUN mkdir -p /root/.jupyter && \
     echo "c.ServerApp.port = 6004" >> /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.open_browser = False" >> /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.token = ''" >> /root/.jupyter/jupyter_server_config.py && \
-    echo "c.ServerApp.password = ''" >> /root/.jupyter/jupyter_server_config.py
+    echo "c.ServerApp.password = ''" >> /root/.jupyter/jupyter_server_config.py \
+    echo "c.ServerApp.browser.gather_usage_stats = False" >> /root/.jupyter/jupyter_server_config.py
 
 
 # Start Streamlit and Jupyter
