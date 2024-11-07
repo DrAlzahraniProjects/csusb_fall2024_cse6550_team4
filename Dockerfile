@@ -43,6 +43,7 @@ RUN mamba install --name team4_env --yes --file requirements.txt && mamba clean 
 #     mamba clean --all -f -y
 # # Install additional required libraries
 RUN pip install -qU langchain_milvus
+RUN pip install --no-cache-dir torch==2.0.1
 
 # Add the necessary dependencies
 # RUN apt-get update && apt-get install -y \
