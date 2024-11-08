@@ -220,11 +220,12 @@ else:
     # Load the CSS file and apply the styles
     with open(css_file_path) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+st.title("Team 4 Chatbot")
+
 def main():
     with open(css_file_path) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
     
-    st.title("Team 4 Chatbot")
     
  
 # Initialize session state if it doesn't exist
