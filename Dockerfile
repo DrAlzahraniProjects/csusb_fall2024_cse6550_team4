@@ -83,15 +83,22 @@ COPY . /app
 EXPOSE 5004
 EXPOSE 6004
 
-# Configure Jupyter Notebook settings
+# Clear any existing Jupyter configurations to prevent conflicts
+RUN rm -rf /root/.jupyter/*
+# Configure Jupyter Server settings for newer Jupyter versions
 RUN mkdir -p /root/.jupyter && \
-    echo "c.NotebookApp.allow_root = True" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.port = 6004" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.open_browser = False" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.token = ''" >> /root/.jupyter/jupyter_notebook_config.py && \
-    echo "c.NotebookApp.browser.gatherUsageStats = False" >> /root/.jupyter/jupyter_notebook_config.py
-    
+    echo "c.ServerApp.allow_root = True" > /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.port = 6004" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.open_browser = False" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.token = ''" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.browser.gatherUsageStats = False" >> /root/.jupyter/jupyter_server_config.py
+
+# Configure Streamlit to disable usage statistics
+RUN mkdir -p ~/.streamlit && \
+    echo "[browser]" > ~/.streamlit/config.toml && \
+    echo "gatherUsageStats = false" >> ~/.streamlit/config.toml    
 
 # Start Streamlit and Jupyter
-CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"]
+# CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password=''"]
+CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter server --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password=''"]
