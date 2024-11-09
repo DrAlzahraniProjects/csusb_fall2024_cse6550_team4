@@ -49,6 +49,32 @@ Once the container is running, you can access the application at:
 - http://localhost:5004/team4/
 - http://127.0.0.1:5004/team4
 - Jupyter Notebook: http://localhost:6004/tree?
+### SQA about confusion matrix
+- Answerable questions
+```bash
+ What is KnowLog?
+ How does LLm's work?
+ What is regression testing?
+ What is risk identification?
+ How knowlog is different from Unilog?
+ What is fault localisation?
+ How chatGPT works?
+ What actually is artificial intelligence?
+ What is automated android bug?
+ How vulnerabilities are detected?
+```
+- Unaswerable questions
+```bash
+  How do I connect to Starbucks Wi-Fi?
+  What is refactoring?
+  Can you write code for user interface?
+  Where is CSUSB located?
+  What class does Dr. Alzahrani teach?
+  Who is Pressman?
+  What is software development?
+  What is software engineering class about?
+  How to enroll software engineering course?
+```
 ### Additional Information
 
 - **Docker Installation**: Ensure Docker is installed on your machine. You can download it from [Docker's official website](https://www.docker.com/products/docker-desktop).
