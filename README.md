@@ -49,30 +49,64 @@ Once the container is running, you can access the application at:
 - http://localhost:5004/team4/
 - http://127.0.0.1:5004/team4
 - Jupyter Notebook: http://localhost:6004/tree?
-### SQA about confusion matrix
+### SQA for confusion matrix
 - Answerable questions
 ```bash
  What is KnowLog?
+```
+```bash
  How does LLm's work?
+```
+```bash
  What is regression testing?
+```
+```bash
  What is risk identification?
+```
+```bash
  How knowlog is different from Unilog?
+```
+```bash
  What is fault localisation?
+```
+```bash
  How chatGPT works?
+```
+```bash
  What actually is artificial intelligence?
+```
+```bash
  What is automated android bug?
+```
+```bash
  How vulnerabilities are detected?
 ```
 - Unaswerable questions
 ```bash
   How do I connect to Starbucks Wi-Fi?
+```
+```bash
   What is refactoring?
+```
+```bash
   Can you write code for user interface?
+```
+```bash
   Where is CSUSB located?
+```
+```bash
   What class does Dr. Alzahrani teach?
+```
+```bash
   Who is Pressman?
+```
+```bash
   What is software development?
+```
+```bash
   What is software engineering class about?
+```
+```bash
   How to enroll software engineering course?
 ```
 ### Additional Information
