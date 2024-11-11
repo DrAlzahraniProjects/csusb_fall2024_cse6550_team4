@@ -42,74 +42,95 @@ def display_performance_metrics():
     # Retrieve performance metrics from the database
     result = db_client.get_performance_metrics()
 
-    # Highlight True Positive, True Negative, False Positive, False Negative
-    st.sidebar.markdown("""
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
-            <div style="flex: 1; background-color: #e8f5e9; padding: 8px; border-radius: 5px; text-align: center;">
-                <strong style="color: #388e3c;">True Positive</strong><br>
-                <span style="color: #388e3c;">{}</span>
+# Define CSS for custom styles
+    st.markdown("""
+        <style>
+            .custom-container {
+                font-family: sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: left;
+            }
+            .keybox {
+                width: 200px;
+                padding: 10px;
+                margin: 10px;
+                border: 1px solid #ccc;
+                border-radius: 10px;
+                background-color: #e9f0f5;
+                color: #508493;
+                border-color: #508493;
+            }
+            .box {
+                width: 200px;
+                padding: 10px;
+                margin: 10px;
+                border: 1px solid #ccc;
+                border-radius: 10px;
+            }
+            .box-grey {
+                background-color: #f2f2f2;
+            }
+            .table-style {
+                border-collapse: collapse;
+                width: 300px;
+                margin: 20px 0;
+            }
+            .table-style th, .table-style td {
+                text-align: center;
+                padding: 8px;
+                border: 1px solid #ddd;
+            }
+            .header-style {
+                background-color: #f2f2f2;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+# Use Markdown to display styled HTML
+    st.sidebar.markdown(f"""
+        <div class='custom-container'>
+            <div class='keybox'>
+                Sensitivity: {result['sensitivity']}
             </div>
-            <div style="flex: 1; background-color: #ffebee; padding: 8px; border-radius: 5px; text-align: center;">
-                <strong style="color: #d32f2f;">True Negative</strong><br>
-                <span style="color: #d32f2f;">{}</span>
+            <div class='keybox'>
+                Specificity: {result['specificity']}
             </div>
-            <div style="flex: 1; background-color: #fff8e1; padding: 8px; border-radius: 5px; text-align: center;">
-                <strong style="color: #fbc02d;">False Positive</strong><br>
-                <span style="color: #fbc02d;">{}</span>
+            <table class='table-style'>
+                <tr>
+                    <th class='header-style'></th>
+                    <th class='header-style'>Pred. Ans</th>
+                    <th class='header-style'>Pred. Unans</th>
+                </tr>
+                <tr>
+                    <td>Actual Ans</td>
+                    <td>{result["true_positive"]} (TP)</td>
+                    <td>{result["false_negative"]} (FN)</td>
+                </tr>
+                <tr>
+                    <td>Actual Unans</td>
+                    <td>{result["false_positive"]} (FP)</td>
+                    <td>{result["true_negative"]} (TN)</td>
+                </tr>
+            </table>
+            <div class='box box-grey'>
+                Accuracy: {result['accuracy']}
             </div>
-            <div style="flex: 1; background-color: #f3e5f5; padding: 8px; border-radius: 5px; text-align: center;">
-                <strong style="color: #7b1fa2;">False Negative</strong><br>
-                <span style="color: #7b1fa2;">{}</span>
+            <div class='box box-grey'>
+                Precision: {result['precision']}
+            </div>
+            <div class='box box-grey'>
+                F1 Score: {result['f1_score']}
             </div>
         </div>
-    """.format(result["true_positive"], result["true_negative"], result["false_positive"], result["false_negative"]),
-    unsafe_allow_html=True)
-
-    # Add space for clarity
-    st.sidebar.markdown("<br>", unsafe_allow_html=True)
-
-    # Display Sensitivity, Specificity, Accuracy, Precision, F1 Score
-    important_metrics = [
-        ("Sensitivity", "sensitivity"),
-        ("Specificity", "specificity"),
-        ("Accuracy", "accuracy"),
-        ("Precision", "precision"),
-        ("F1 Score", "f1_score"),
-        ("Recall", "recall")
-    ]
-    for metric_name, metric in important_metrics:
-        st.sidebar.markdown(f"""
-            <div style='background-color: #5A6378; padding: 8px; border-radius: 5px; margin-bottom: 8px; text-align: center;'>
-                <strong>{metric_name}</strong>: <span style='color: #ffffff;'>{result[metric]}</span>
-            </div>
-        """, unsafe_allow_html=True)
-    st.sidebar.markdown("<br>", unsafe_allow_html=True)
-    st.sidebar.markdown("<br>", unsafe_allow_html=True)
-
+    """, unsafe_allow_html=True)
 
     # Add a reset button with styling
     reset_button = st.sidebar.button("Reset")
     if reset_button:
         db_client.reset_performance_metrics()
         st.rerun()
-    st.sidebar.markdown("""
-        <div style="text-align: center; margin-top: 10px;">
-            <style>
-                .stButton button {
-                    background-color: #ff5252;
-                    color: white;
-                    font-weight: bold;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    border: none;
-                    cursor: pointer;
-                }
-                .stButton button:hover {
-                    background-color: #ff5252;
-                    color: black;
-                }
-            </style>
-            """, unsafe_allow_html=True)
+   
 
 
 def handle_feedback(assistant_message_id):
