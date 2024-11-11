@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.schema import Document
 from langchain_core.prompts import PromptTemplate
+
 #from langchain_mistralai import MistralAIEmbeddings
 from langchain_mistralai.chat_models import ChatMistralAI
 #from langchain_cohere import ChatCohere
@@ -84,6 +85,7 @@ def query_rag(query):
             return "I am currently experiencing high traffic. Please try again later.", []
         #return "I am unable to answer this question at the moment. Please try again later.", []
         return f"HTTPStatusError: {e}", [] 
+
     
     # logic to add sources to the response
     # max_relevant_sources = 4 # number of sources at most to be added to the response

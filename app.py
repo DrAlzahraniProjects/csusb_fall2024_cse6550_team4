@@ -4,7 +4,9 @@ import numpy as np
 from statistics_chatbot import (
    DatabaseClient
 )
+
 from bot import query_rag, initialize_milvus
+
 from streamlit_pdf_viewer import pdf_viewer
 db_client = DatabaseClient()
 from uuid import uuid4
@@ -267,5 +269,6 @@ if user_input:= st.chat_input("Message writing assistant"):
 # Save the chat history in the session state
 if __name__ == "__main__":
     main()
+
 
 
