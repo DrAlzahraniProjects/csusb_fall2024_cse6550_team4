@@ -93,7 +93,7 @@ RUN mkdir -p /root/.jupyter && \
     echo "c.ServerApp.open_browser = False" >> /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.token = ''" >> /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.browser.gatherUsageStats = False" >> /root/.jupyter/jupyter_server_config.py && \
-    echo "c.NotebookApp.base_url = '/team4/jupyter'" >> /root/.jupyter/jupyter_notebook_config.py
+    echo "c.ServerApp.base_url = '/team4/jupyter'" >> /root/.jupyter/jupyter_server_config.py
 
 
 # Configure Streamlit to disable usage statistics
@@ -103,4 +103,4 @@ RUN mkdir -p ~/.streamlit && \
 
 # Start Streamlit and Jupyter
 # CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password=''"]
-CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter server --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password='' --NotebookApp.base_url='/team4/jupyter'"]
+CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter server --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password='' --ServerApp.base_url='/team4/jupyter'"]
