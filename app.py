@@ -99,16 +99,16 @@ def display_performance_metrics():
             <table class='table-style'>
                 <tr>
                     <th class='header-style'></th>
-                    <th class='header-style'>Pred. Ans</th>
-                    <th class='header-style'>Pred. Unans</th>
+                    <th class='header-style'>Predicted +</th>
+                    <th class='header-style'>Predicted -</th>
                 </tr>
                 <tr>
-                    <td>Actual Ans</td>
+                    <td>Actual +</td>
                     <td>{result["true_positive"]} (TP)</td>
                     <td>{result["false_negative"]} (FN)</td>
                 </tr>
                 <tr>
-                    <td>Actual Unans</td>
+                    <td>Actual -</td>
                     <td>{result["false_positive"]} (FP)</td>
                     <td>{result["true_negative"]} (TN)</td>
                 </tr>
