@@ -216,38 +216,36 @@ def load_exisiting_db(uri=MILVUS_URI):
     return vector_store
 
 def get_answer_with_source(response):
-  """
-  Extract the answer and relevant source information from the response.
-  This function processes the response from the RAG chain, extracting the answer
-  and up to 5 source references (page numbers) from the context documents.
+    """
+    Extract the answer and relevant source information from the response.
+    This function processes the response from the RAG chain, extracting the answer
+    and up to 4 source references (page numbers) from the context documents.
 
-  Args:
-    response (dict): The response dictionary from the RAG chain, containing 'answer' and 'context' keys.
-  Returns:
-    str: A formatted string containing the answer followed by source information.
-  """
-#   pdf_path = "./volumes"
-  answer = response.get('answer', 'No answer found.') # Extract the answer
-  sources = [] # Handle multiple contexts in the response (assuming response['context'] is a list)
-  # Iterate over context documents and get top 5 sources
-  for doc in response.get("context", [])[:5]:
-    page = doc.metadata.get('page', 'Unknown page')
-    print(page)
-    source_pdf = doc.metadata.get('source', '').split('/')[-1]  # Get only the file name from the path
-    print(source_pdf,flush=True)
-        # Adjust the page index and create a link to open the PDF at a specific page
-    if page != 'Unknown page':
-            # page += 1  # Adjust to be 1-based indexing if necessary
+    Args:
+        response (dict): The response dictionary from the RAG chain, containing 'answer' and 'context' keys.
+    Returns:
+        str: A formatted string containing the answer followed by source information.
+    """
+    answer = response.get('answer', 'No answer found.')  # Extract the answer
+    sources = []  # Prepare to store up to 4 sources
+
+    # Iterate over the context documents to retrieve up to 4 sources
+    for doc in response.get("context", [])[:4]:
+        page = doc.metadata.get('page', 'Unknown page')
+        source_pdf = doc.metadata.get('source', '').split('/')[-1]  # Get only the file name
+
+        # Create the link format based on whether the page number is known
+        if page != 'Unknown page':
             link = f'<a href="/team4/?view=pdf&file={data_dir}/{source_pdf}&page={page + 1}" target="_blank">[{page + 1}]</a>'
-            # link = f"[Page {page} in {source_pdf}](/team4/?view=pdf&file={data_dir}/{source_pdf}&page={page})"
-    else:
+        else:
             link = f"[Source: {source_pdf}]"
 
-    sources.append(link)
+        sources.append(link)
 
     # Format all sources with Markdown-compatible newline breaks
     sources_info = "\n\nSources:\n" + "\n".join(sources)
     return f"{answer}\n\n{sources_info}"
+
 
 if __name__ == '__main__':
     pass
