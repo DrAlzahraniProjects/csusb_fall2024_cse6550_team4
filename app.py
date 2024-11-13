@@ -36,7 +36,12 @@ unanswerable_questions = {
 def display_performance_metrics():
     """Display the performance metrics in the sidebar with styled sections."""
 
-    st.sidebar.title("Confusion Matrix")
+    # st.sidebar.title("Confusion Matrix")
+    # Define the URL to redirect to
+    target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4/blob/main/README.md"  # Replace with the actual URL you want to link to
+
+# Create a clickable hyperlink with the title "Confusion Matrix"
+    st.sidebar.markdown(f"<h1><a href='{target_url}' target='_blank' style='text-decoration: none; color: inherit;'>Confusion Matrix</a></h1>", unsafe_allow_html=True)
 
     # Retrieve performance metrics from the database
     result = db_client.get_performance_metrics()
