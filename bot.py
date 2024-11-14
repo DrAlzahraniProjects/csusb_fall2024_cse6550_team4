@@ -177,7 +177,7 @@ def load_exisiting_db(uri=MILVUS_URI):
 def get_answer_with_source(response):
     answer = response.get('answer', 'No answer found.')
     sources = []
-
+#     print(response.get("context", []))
     for doc in response.get("context", [])[:4]:
         page = doc.metadata.get('page', 'Unknown page')
         source_pdf = doc.metadata.get('source', '').split('/')[-1]
