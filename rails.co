@@ -64,7 +64,6 @@ define user ask irrelevant question
   "Tell me a joke"
   "Who won the game last night?"
   "Do you like movies?"
-  # (add more examples of non-research questions)
 
 define flow handle inappropriate language
   user use inappropriate language
