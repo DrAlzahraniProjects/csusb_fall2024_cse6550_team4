@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import numpy as np
+import streamlit.components.v1 as components
 from statistics_chatbot import (
    DatabaseClient
 )
@@ -210,8 +211,8 @@ def clean_repeated_text(text):
 
 def serve_pdf():
     """Used to open PDF file when a citation is clicked"""
+    
     pdf_path = st.query_params.get("file")
-
     page = max(int(st.query_params.get("page", 1)), 1)
     adjusted_page = page
         
@@ -226,7 +227,8 @@ def serve_pdf():
                         pdf_path,
                         width=2000,  # Width in pixels; you can leave it as is since CSS will control scaling
                         height=1000,
-                        pages_to_render=[],
+                        pages_to_render=[page-1],
+                        scroll_to_page=page,
                         render_text=True
                     )
                     
@@ -241,52 +243,45 @@ else:
     # Load the CSS file and apply the styles
     with open(css_file_path) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-st.title("Team 4 Chatbot")
-
-def main():
-    with open(css_file_path) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-    
-    
- 
+    st.title("Team 4 Chatbot")
 # Initialize session state if it doesn't exist
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = {}
-    with st.spinner("Initializing, Please Wait..."):
-        db_client.create_performance_metrics_table()
-        vector_store = initialize_milvus()
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = {}
+        with st.spinner("Initializing, Please Wait..."):
+            db_client.create_performance_metrics_table()
+            vector_store = initialize_milvus()
 
 
-for message_id,message in st.session_state.chat_history.items():
-    if message['role'] == 'user':
-        st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-    
-        st.feedback(
-            "thumbs",
-            key = f"feedback_{message_id}",
-            on_change = handle_feedback(message_id),
+    for message_id,message in st.session_state.chat_history.items():
+        if message['role'] == 'user':
+            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
         
-        )
-    else:
-        st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
-# Display performance metrics in the sidebar
-display_performance_metrics()
-if user_input:= st.chat_input("Message writing assistant"):
-    unique_id = str(uuid4())
-    user_message_id = f"user_message_{unique_id}"
-    bot_message_id = f"bot_message{unique_id}"
-    st.session_state.chat_history[user_message_id] = {"role": "user", "content": user_input}
-    st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
-    with st.spinner("Response Generating, please wait..."):
-        bot_response = query_rag(user_input)
-        cleaned_response = clean_repeated_text(bot_response)
-        if cleaned_response:
-            st.session_state.chat_history[bot_message_id] = {"role": "bot", "content": cleaned_response}
-            st.rerun()
+            
         else:
-            st.error("Sorry, I couldn't find a response to your question.")
+            st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
+            st.feedback(
+                "thumbs",
+                key = f"feedback_{message_id}",
+                on_change = handle_feedback(message_id),
+            
+            )
+    # Display performance metrics in the sidebar
+    display_performance_metrics()
+    if user_input:= st.chat_input("Message writing assistant"):
+        unique_id = str(uuid4())
+        user_message_id = f"user_message_{unique_id}"
+        bot_message_id = f"bot_message{unique_id}"
+        st.session_state.chat_history[user_message_id] = {"role": "user", "content": user_input}
+        st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
+        with st.spinner("Response Generating, please wait..."):
+            bot_response = query_rag(user_input)
+            cleaned_response = clean_repeated_text(bot_response)
+            if cleaned_response:
+                st.session_state.chat_history[bot_message_id] = {"role": "bot", "content": cleaned_response}
+                st.rerun()
+            else:
+                st.error("Sorry, I couldn't find a response to your question.")
 # Save the chat history in the session state
 if __name__ == "__main__":
-    main()
-
+    pass
 
