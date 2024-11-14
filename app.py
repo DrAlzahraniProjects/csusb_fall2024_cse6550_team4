@@ -278,12 +278,18 @@ if 'chat_history' not in st.session_state:
 for message_id,message in st.session_state.chat_history.items():
     if message['role'] == 'user':
         st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+        st.feedback(
+            "thumbs",
+            key = f"feedback_{message_id}",
+            on_change = handle_feedback(message_id)
+        
+        )
     else:
         st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
         st.feedback(
             "thumbs",
             key = f"feedback_{message_id}",
-            on_change = handle_feedback(message_id),
+            on_change = handle_feedback(message_id)
         
         )
     
