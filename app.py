@@ -286,12 +286,12 @@ for message_id,message in st.session_state.chat_history.items():
         )
     else:
         st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
-        st.feedback(
-            "thumbs",
-            key = f"feedback_{message_id}",
-            on_change = handle_feedback(message_id)
+        # st.feedback(
+        #     "thumbs",
+        #     key = f"feedback_{message_id}",
+        #     on_change = handle_feedback(message_id)
         
-        )
+        # )  
     
 # Display performance metrics in the sidebar
 display_performance_metrics()
