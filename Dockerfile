@@ -54,10 +54,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 # Install Cython, which is required by some NeMo dependencies
-RUN /opt/conda/envs/team4_env/bin/pip install cython
+# RUN /opt/conda/envs/team4_env/bin/pip install cython
 
-# Install NeMo toolkit, including NeMo Curator
-RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
 
 RUN pip install streamlit-pdf-viewer
 RUN pip install pypdf
