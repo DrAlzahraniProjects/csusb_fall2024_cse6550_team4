@@ -39,10 +39,24 @@ def display_performance_metrics():
     # st.sidebar.title("Confusion Matrix")
     # Define the URL to redirect to
     target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4/blob/main/README.md"  # Replace with the actual URL you want to link to
-
+    st.sidebar.markdown(f"""
+        <a href="{target_url}" target="_blank" style="
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+            width: 100%;
+        ">Confusion Matrix</a>
+        """, unsafe_allow_html=True)
 # Create a clickable hyperlink with the title "Confusion Matrix"
-    st.sidebar.markdown(f"<h1><a href='{target_url}' target='_blank' style='text-decoration: none; color: inherit;'>Confusion Matrix</a></h1>", unsafe_allow_html=True)
-
+    # st.sidebar.markdown(f"<h1><a href='{target_url}' target='_blank' style='text-decoration: none; color: inherit;'>Confusion Matrix</a></h1>", unsafe_allow_html=True)
+    # if st.sidebar.button("Confusion Matrix"):
+    #     st.sidebar.markdown(f"<script>window.open('{target_url}');</script>", unsafe_allow_html=True)
     # Retrieve performance metrics from the database
     result = db_client.get_performance_metrics()
 
