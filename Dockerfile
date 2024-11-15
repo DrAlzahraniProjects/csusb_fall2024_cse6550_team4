@@ -57,7 +57,7 @@ RUN apt-get update && apt-get install -y \
 RUN /opt/conda/envs/team4_env/bin/pip install cython
 
 # Install NeMo toolkit, including NeMo Curator
-RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
+# RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
 
 RUN pip install streamlit-pdf-viewer
 RUN pip install pypdf
@@ -86,13 +86,16 @@ EXPOSE 6004
 # Clear any existing Jupyter configurations to prevent conflicts
 RUN rm -rf /root/.jupyter/*
 # Configure Jupyter Server settings for newer Jupyter versions
+# Configure Jupyter Server settings for newer Jupyter versions
 RUN mkdir -p /root/.jupyter && \
     echo "c.ServerApp.allow_root = True" > /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.port = 6004" >> /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.open_browser = False" >> /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.token = ''" >> /root/.jupyter/jupyter_server_config.py && \
-    echo "c.ServerApp.browser.gatherUsageStats = False" >> /root/.jupyter/jupyter_server_config.py
+    echo "c.ServerApp.browser.gatherUsageStats = False" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.base_url = '/team4/jupyter'" >> /root/.jupyter/jupyter_server_config.py && \
+    echo "c.ServerApp.default_url = '/team4/jupyter/tree'" >> /root/.jupyter/jupyter_server_config.py
 
 # Configure Streamlit to disable usage statistics
 RUN mkdir -p ~/.streamlit && \
@@ -101,4 +104,4 @@ RUN mkdir -p ~/.streamlit && \
 
 # Start Streamlit and Jupyter
 # CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password=''"]
-CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter server --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password=''"]
+CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter server --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password='' --ServerApp.base_url='/team4/jupyter'"]
