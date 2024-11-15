@@ -95,7 +95,7 @@ RUN mkdir -p /root/.jupyter && \
     echo "c.ServerApp.token = ''" >> /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.browser.gatherUsageStats = False" >> /root/.jupyter/jupyter_server_config.py && \
     echo "c.ServerApp.base_url = '/team4/jupyter'" >> /root/.jupyter/jupyter_server_config.py && \
-    echo "c.ServerApp.default_url = '/team4/jupyter/tree'" >> /root/.jupyter/jupyter_server_config.py
+    echo "c.ServerApp.default_url = '/tree'" >> /root/.jupyter/jupyter_server_config.py
 
 # Configure Streamlit to disable usage statistics
 RUN mkdir -p ~/.streamlit && \
