@@ -50,65 +50,20 @@ Once the container is running, you can access the application at:
 - http://127.0.0.1:5004/team4
 - Jupyter Notebook: http://localhost:6004/tree?
 ### SQA for confusion matrix
-- Answerable questions
-```bash
- What is KnowLog?
-```
-```bash
- How does LLm's work?
-```
-```bash
- What is regression testing?
-```
-```bash
- What is risk identification?
-```
-```bash
- How knowlog is different from Unilog?
-```
-```bash
- What is fault localisation?
-```
-```bash
- How chatGPT works?
-```
-```bash
- What actually is artificial intelligence?
-```
-```bash
- What is automated android bug?
-```
-```bash
- How vulnerabilities are detected?
-```
-- Unaswerable questions
-```bash
-  How do I connect to Starbucks Wi-Fi?
-```
-```bash
-  What is refactoring?
-```
-```bash
-  Can you write code for user interface?
-```
-```bash
-  Where is CSUSB located?
-```
-```bash
-  What class does Dr. Alzahrani teach?
-```
-```bash
-  Who is Pressman?
-```
-```bash
-  What is software development?
-```
-```bash
-  What is software engineering class about?
-```
-```bash
-  How to enroll software engineering course?
-```
+
+| **Answerable questions**                   |  **Unaswerable questions**                 |
+|-------------------------------------       |--------------------------------------------|
+| What is KnowLog?                           | How do I connect to Starbucks Wi-Fi?       |
+| How does LLm's work?                       | What is refactoring?                       | 
+| What is regression testing?                | Can you write code for user interface?     |
+| What is risk identification?               | Where is CSUSB located?                    |
+| How knowlog is different from Unilog?      | What class does Dr. Alzahrani teach?       |
+| What is fault localisation?                | Who is Pressman?                           |
+| How chatGPT works?                         | What is software development?              |
+| What actually is artificial intelligence?  | What is software engineering class about?  |
+| What is automated android bug?             | How to enroll software engineering course? |
+
+
 ### Additional Information
 
 - **Docker Installation**: Ensure Docker is installed on your machine. You can download it from [Docker's official website](https://www.docker.com/products/docker-desktop).

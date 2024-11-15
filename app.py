@@ -6,10 +6,14 @@ from statistics_chatbot import (
 )
 from bot import query_rag, initialize_milvus
 from streamlit_pdf_viewer import pdf_viewer
-db_client = DatabaseClient()
 from uuid import uuid4
+
+# Initialize database client
+db_client = DatabaseClient()
+# Configure page
 st.set_page_config(page_title="Team4 Chatbot", layout="wide")
 
+# Define answerable and unanswerable questions
 answerable_questions = {
         "What is KnowLog?".lower(),
         "How does LLm's work?".lower(),
@@ -33,77 +37,22 @@ unanswerable_questions = {
         "What is software engineering class about?".lower(),
         "How to enroll software engineering course?".lower(),
     }
+
 def display_performance_metrics():
     """Display the performance metrics in the sidebar with styled sections."""
-
-    # st.sidebar.title("Confusion Matrix")
     # Define the URL to redirect to
-    target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4/blob/main/README.md"  # Replace with the actual URL you want to link to
+    target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4?tab=readme-ov-file#SQA-for-confusion-matrix"  # Replace with the actual URL you want to link to
     st.sidebar.markdown(f"""
-        <a href="{target_url}" target="_blank" style="
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            color: white;
-            background-color: #4CAF50;
-            border: none;
-            border-radius: 4px;
-            text-align: center;
-            text-decoration: none;
-            width: 100%;
-        ">Confusion Matrix</a>
+        <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : white">Confusion Matrix</a>
         """, unsafe_allow_html=True)
-# Create a clickable hyperlink with the title "Confusion Matrix"
-    # st.sidebar.markdown(f"<h1><a href='{target_url}' target='_blank' style='text-decoration: none; color: inherit;'>Confusion Matrix</a></h1>", unsafe_allow_html=True)
-    # if st.sidebar.button("Confusion Matrix"):
-    #     st.sidebar.markdown(f"<script>window.open('{target_url}');</script>", unsafe_allow_html=True)
     # Retrieve performance metrics from the database
-    result = db_client.get_performance_metrics()
+    try:
+        result = db_client.get_performance_metrics()
+    except Exception:
+        st.sidebar.error("Error retrieving performance metrics.")
+        result = {'sensitivity': '-', 'specificity': '-', 'accuracy': '-', 'precision': '-', 'f1_score': '-', 
+                  'true_positive': '-', 'false_negative': '-', 'false_positive': '-', 'true_negative': '-'}
 
-# Define CSS for custom styles
-    st.markdown("""
-        <style>
-            .custom-container {
-                font-family: sans-serif;
-                display: flex;
-                flex-direction: column;
-                align-items: left;
-            }
-            .keybox {
-                width: 200px;
-                padding: 10px;
-                margin: 10px;
-                border: 1px solid #ccc;
-                border-radius: 10px;
-                background-color: #e9f0f5;
-                color: #508493;
-                border-color: #508493;
-            }
-            .box {
-                width: 200px;
-                padding: 10px;
-                margin: 10px;
-                border: 1px solid #ccc;
-                border-radius: 10px;
-            }
-            .box-grey {
-                background-color: #f2f2f2;
-            }
-            .table-style {
-                border-collapse: collapse;
-                width: 300px;
-                margin: 20px 0;
-            }
-            .table-style th, .table-style td {
-                text-align: center;
-                padding: 8px;
-                border: 1px solid #ddd;
-            }
-            .header-style {
-                background-color: #f2f2f2;
-            }
-        </style>
-    """, unsafe_allow_html=True)
 
 # Use Markdown to display styled HTML
     st.sidebar.markdown(f"""
@@ -144,10 +93,14 @@ def display_performance_metrics():
     """, unsafe_allow_html=True)
 
     # Add a reset button with styling
-    reset_button = st.sidebar.button("Reset")
-    if reset_button:
+
+    if st.sidebar.button("Reset"):
+       try:
         db_client.reset_performance_metrics()
+        st.success("Metrics reset successfully.")
         st.rerun()
+       except Exception as e:
+        st.sidebar.error("Error resetting performance metrics.")
    
 
 
@@ -237,12 +190,10 @@ def serve_pdf():
         if os.path.exists(pdf_path):
             with st.spinner(f"Loading page..."):
                 col1, col2, col3 = st.columns([1, 2, 1])  # Adjust ratios as needed
-
                 with col2:
                     # Place your PDF viewer here
                     pdf_viewer(
-                        pdf_path,
-                        width=2000,  # Width in pixels; you can leave it as is since CSS will control scaling
+                        pdf_path,width=2000,  
                         height=1000,
                         pages_to_render=[],
                         render_text=True
@@ -252,6 +203,7 @@ def serve_pdf():
             st.error(f"PDF file not found at {pdf_path}")
     else:
         st.error("No PDF file specified in query parameters")
+
 # Load the CSS file and apply the styles
 if "view" in st.query_params and st.query_params["view"] == "pdf":
         serve_pdf()
@@ -264,9 +216,7 @@ st.title("Team 4 Chatbot")
 def main():
     with open(css_file_path) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-    
-    
- 
+
 # Initialize session state if it doesn't exist
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = {}
@@ -285,30 +235,27 @@ for message_id,message in st.session_state.chat_history.items():
         
         )
     else:
-        st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
-        # st.feedback(
-        #     "thumbs",
-        #     key = f"feedback_{message_id}",
-        #     on_change = handle_feedback(message_id)
-        
-        # )  
+        st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True) 
     
 # Display performance metrics in the sidebar
 display_performance_metrics()
 if user_input:= st.chat_input("Message writing assistant"):
-    unique_id = str(uuid4())
-    user_message_id = f"user_message_{unique_id}"
-    bot_message_id = f"bot_message{unique_id}"
-    st.session_state.chat_history[user_message_id] = {"role": "user", "content": user_input}
-    st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
-    with st.spinner("Response Generating, please wait..."):
-        bot_response = query_rag(user_input)
-        cleaned_response = clean_repeated_text(bot_response)
-        if cleaned_response:
-            st.session_state.chat_history[bot_message_id] = {"role": "bot", "content": cleaned_response}
-            st.rerun()
-        else:
-            st.error("Sorry, I couldn't find a response to your question.")
+    if user_input.strip():
+        unique_id = str(uuid4())
+        user_message_id = f"user_message_{unique_id}"
+        bot_message_id = f"bot_message{unique_id}"
+        st.session_state.chat_history[user_message_id] = {"role": "user", "content": user_input}
+        st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
+        with st.spinner("Response Generating, please wait..."):
+            bot_response = query_rag(user_input)
+            cleaned_response = clean_repeated_text(bot_response)
+            if cleaned_response:
+                st.session_state.chat_history[bot_message_id] = {"role": "bot", "content": cleaned_response}
+                st.rerun()
+            else:
+                st.error("Sorry, I couldn't find a response to your question.")
+    else:
+        st.error("Input cannot be empty.")
 # Save the chat history in the session state
 if __name__ == "__main__":
     main()
