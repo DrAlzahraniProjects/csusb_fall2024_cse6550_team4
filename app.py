@@ -212,53 +212,51 @@ else:
     # Load the CSS file and apply the styles
     with open(css_file_path) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-st.title("Team 4 Chatbot")
-
-def main():
-    with open(css_file_path) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-
-# Initialize session state if it doesn't exist
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = {}
-    with st.spinner("Initializing, Please Wait..."):
-        db_client.create_performance_metrics_table()
-        vector_store = initialize_milvus()
+    st.title("Team 4 Chatbot")
 
 
-for message_id,message in st.session_state.chat_history.items():
-    if message['role'] == 'user':
-        st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-        st.feedback(
-            "thumbs",
-            key = f"feedback_{message_id}",
-            on_change = handle_feedback(message_id)
+
+    # Initialize session state if it doesn't exist
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = {}
+        with st.spinner("Initializing, Please Wait..."):
+            db_client.create_performance_metrics_table()
+            vector_store = initialize_milvus()
+
+
+    for message_id,message in st.session_state.chat_history.items():
+        if message['role'] == 'user':
+            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+            st.feedback(
+                "thumbs",
+                key = f"feedback_{message_id}",
+                on_change = handle_feedback(message_id)
+            
+            )
+        else:
+            st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True) 
         
-        )
-    else:
-        st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True) 
-    
-# Display performance metrics in the sidebar
-display_performance_metrics()
-if user_input:= st.chat_input("Message writing assistant"):
-    if user_input.strip():
-        unique_id = str(uuid4())
-        user_message_id = f"user_message_{unique_id}"
-        bot_message_id = f"bot_message{unique_id}"
-        st.session_state.chat_history[user_message_id] = {"role": "user", "content": user_input}
-        st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
-        with st.spinner("Response Generating, please wait..."):
-            bot_response = query_rag(user_input)
-            cleaned_response = clean_repeated_text(bot_response)
-            if cleaned_response:
-                st.session_state.chat_history[bot_message_id] = {"role": "bot", "content": cleaned_response}
-                st.rerun()
-            else:
-                st.error("Sorry, I couldn't find a response to your question.")
-    else:
-        st.error("Input cannot be empty.")
+    # Display performance metrics in the sidebar
+    display_performance_metrics()
+    if user_input:= st.chat_input("Message writing assistant"):
+        if user_input.strip():
+            unique_id = str(uuid4())
+            user_message_id = f"user_message_{unique_id}"
+            bot_message_id = f"bot_message{unique_id}"
+            st.session_state.chat_history[user_message_id] = {"role": "user", "content": user_input}
+            st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
+            with st.spinner("Response Generating, please wait..."):
+                bot_response = query_rag(user_input)
+                cleaned_response = clean_repeated_text(bot_response)
+                if cleaned_response:
+                    st.session_state.chat_history[bot_message_id] = {"role": "bot", "content": cleaned_response}
+                    st.rerun()
+                else:
+                    st.error("Sorry, I couldn't find a response to your question.")
+        else:
+            st.error("Input cannot be empty.")
 # Save the chat history in the session state
 if __name__ == "__main__":
-    main()
+    pass
 
 

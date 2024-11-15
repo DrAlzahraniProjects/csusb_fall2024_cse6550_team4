@@ -1,7 +1,7 @@
 /* User message styles */
 .user-message {
     text-align: right;
-    background-color: #3C3C3C;
+    background-color: #7a7878;
     color: #FFFFFF;
     border: 1px solid #3C3F41;
     border-radius: 10px;
@@ -16,7 +16,7 @@
 /* Bot message styles */
 .bot-message {
     text-align: left;
-    background-color: #2B2B2B;
+    background-color: #7a7878;
     color: #FFFFFF;
     border: 1px solid #3C3F41;
     border-radius: 10px;
