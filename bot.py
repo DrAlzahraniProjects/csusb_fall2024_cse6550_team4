@@ -14,7 +14,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from pymilvus import connections, utility
 from requests.exceptions import HTTPError
 from httpx import HTTPStatusError
-from data import CORPUS_SOURCE
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from roman import toRoman
 

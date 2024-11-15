@@ -195,7 +195,8 @@ def serve_pdf():
                     pdf_viewer(
                         pdf_path,width=2000,  
                         height=1000,
-                        pages_to_render=[],
+                        pages_to_render=[page],
+                        scroll_to_page=page,
                         render_text=True
                     )
                     
