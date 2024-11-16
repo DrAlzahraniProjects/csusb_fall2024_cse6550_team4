@@ -60,7 +60,9 @@ RUN /opt/conda/envs/team4_env/bin/pip install cython
 # RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
 
 RUN pip install streamlit-pdf-viewer
-RUN pip install pypdf
+RUN pip install pypdf 
+RUN pip install PyPDF2
+
 
 # Set environment variables for Nemo
 # ENV NEMO_DATA_PATH=/data

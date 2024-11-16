@@ -1,4 +1,6 @@
 import os
+import pickle
+import uuid
 from dotenv import load_dotenv
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.schema import Document
@@ -16,6 +18,7 @@ from requests.exceptions import HTTPError
 from httpx import HTTPStatusError
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from roman import toRoman
+from PyPDF2 import PdfReader
 
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
@@ -23,6 +26,7 @@ MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 MILVUS_URI = "./milvus/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 data_dir = "./volumes"
+CACHE_FILE = "./document_cache.pkl"
 
 def get_embedding_function():
     """
@@ -34,17 +38,49 @@ def get_embedding_function():
     embedding_function = HuggingFaceEmbeddings(model_name=MODEL_NAME)
     return embedding_function
 
+def load_pdfs_in_batches(data_dir, batch_size=20):
+    """
+    Load PDFs in batches to avoid memory overload.
+    If a cache file exists, load previously processed files from it and only process new files.
+    """
+    documents = []
+    file_list = [f for f in os.listdir(data_dir) if f.endswith(".pdf")]
+    processed_files = {}
 
-def load_pdfs(data_dir):
-    loader = PyPDFDirectoryLoader(data_dir)
-    documents = loader.load()
-    for doc in documents:
-        if "paper1.pdf" in doc.metadata["source"]:
-            doc.metadata["source"] = "https://dl.acm.org/doi/10.1145/3597503.3649398"
-        elif "paper2.pdf" in doc.metadata["source"]:
-            doc.metadata["source"] = "https://dl.acm.org/doi/10.1145/3597503.3649399"
-    return documents
+    # Load the cache if it exists
+    if os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, "rb") as cache_file:
+            processed_files = pickle.load(cache_file)
+        print("Loaded processed files from cache.")
 
+    new_files = [f for f in file_list if f not in processed_files]
+
+    # Process new files in batches
+    for i in range(0, len(new_files), batch_size):
+        batch_files = new_files[i:i + batch_size]
+        
+        for filename in batch_files:
+            pdf_path = os.path.join(data_dir, filename)
+            reader = PdfReader(pdf_path)
+
+            for page_num, page in enumerate(reader.pages):
+                text = page.extract_text() or ""
+                unique_id = str(uuid.uuid4())
+                documents.append(Document(page_content=text, metadata={"source": pdf_path, "page": page_num + 1, "id": unique_id}))
+
+            # Mark the file as processed
+            processed_files[filename] = True
+
+        # Save the updated cache after processing each batch
+        with open(CACHE_FILE, "wb") as cache_file:
+            pickle.dump(processed_files, cache_file)
+        print(f"Processed and cached batch {i // batch_size + 1}/{len(new_files) // batch_size + 1}")
+
+        yield documents
+        documents = []  # Clear batch after yield
+
+    if not new_files:
+        print("No new files to process.")
 
 def query_rag(query):
     """
@@ -153,18 +189,16 @@ def initialize_milvus(uri: str=MILVUS_URI):
         vector_store: The vector store created
     """
     embeddings = get_embedding_function()
-    print("Embeddings Loaded")
-    # documents = load_documents_from_web()
-    documents = load_pdfs(data_dir)
-    print("Documents Loaded")
-    print(len(documents))
+    vector_store = None
 
-    # Split the documents into chunks
-    docs = split_documents(documents=documents)
-    print("Documents Splitting completed")
+    for documents in load_pdfs_in_batches(data_dir):
+        docs = split_documents(documents)
+        if vector_store is None:
+            vector_store = create_vector_store(docs, embeddings, uri)
+        else:
+            vector_store.add_documents(docs)
 
-    vector_store = create_vector_store(docs, embeddings, uri)
-
+    print("Vector store initialization complete.")
     return vector_store
 
 
