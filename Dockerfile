@@ -53,21 +53,11 @@ RUN apt-get update && apt-get install -y \
     cmake \
     && apt-get clean
 
-# Install Cython, which is required by some NeMo dependencies
-RUN /opt/conda/envs/team4_env/bin/pip install cython
-
-# Install NeMo toolkit, including NeMo Curator
-# RUN /opt/conda/envs/team4_env/bin/pip install nemo_toolkit['nlp']
 
 RUN pip install streamlit-pdf-viewer
 RUN pip install pypdf 
 RUN pip install PyPDF2
 
-
-# Set environment variables for Nemo
-# ENV NEMO_DATA_PATH=/data
-# ENV CURATOR_CONFIG=/app/curator_config.yaml
-# ENV JUPYTER_BROWSER_GATHER_USAGE_STATS="false"
 
 # Set environment variables for Streamlit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
@@ -76,10 +66,6 @@ ENV STREAMLIT_SERVER_PORT=5004
 # Copy the application files into the container
 COPY . /app
 
-
-
-# # Copy the config file for curator
-# COPY curator_config.yaml /app/curator_config.yaml
 
 # Expose ports for Streamlit and Jupyter
 EXPOSE 5004
