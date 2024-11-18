@@ -246,7 +246,14 @@ else:
             st.session_state.chat_history[user_message_id] = {"role": "user", "content": user_input}
             st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
             with st.spinner("Response Generating, please wait..."):
-                bot_response = query_rag(user_input)
+                rag_output = query_rag(user_input)
+                if isinstance(rag_output, tuple):
+                    bot_response = rag_output[0]  # Extract the response part
+                else:
+                    bot_response = str(rag_output)
+
+
+
                 cleaned_response = clean_repeated_text(bot_response)
                 if cleaned_response:
                     st.session_state.chat_history[bot_message_id] = {"role": "bot", "content": cleaned_response}
