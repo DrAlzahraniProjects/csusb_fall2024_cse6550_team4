@@ -17,25 +17,26 @@ st.set_page_config(page_title="Team4 Chatbot", layout="wide")
 answerable_questions = {
         "What is KnowLog?".lower(),
         "How does LLm's work?".lower(),
-        "What is regression testing?".lower(),
+        "What is convo-genAI?".lower(),
         "What is risk identification?".lower(),
-        "How knowlog is different from UniLog?".lower(),
-        "What is fault localisation?".lower(),
-        "How chatGPT works?".lower(),
-        "What actually is artificial intelligence?".lower(),
-        "What is automated android bug?".lower(),
+        "How UniLog works?".lower(),
+        "What is smart contract?".lower(),
+        "Explain briefly on EDEFuzz?".lower(),
+        "Effects of GILT?".lower(),
+        "what is the problem and solution of research paper related to convogen-AI?".lower(),
         "How vulnerabilities are detected?".lower()
     }
 unanswerable_questions = {
-        "How do I connect to Starbucks Wi-Fi?".lower(),
-        "What is refactoring?".lower(),
-        "Can you write code for user interface?".lower(),
-        "Where is CSUSB located?".lower(),
+        "Who teaches independent study class?".lower(),
+        "what is RMMM plan?".lower(),
+        "Who is the chair of the department?".lower(),
+        "What is 6550 course about in csusb?".lower(),
+        "who is Dean of computer science in CSUSB?".lower(),
         "What class does Dr. Alzahrani teach?".lower(),
         "Who is Pressman?".lower(),
-        "What is software development?".lower(),
-        "What is software engineering class about?".lower(),
-        "How to enroll software engineering course?".lower(),
+        "Who is ITS department head in CSUSB?".lower(),
+        "Can i get class schdeule of CS department for Fall 2024?".lower(),
+        "What is the minimum grade required to enroll for a comprehensive examination".lower(),
     }
 
 def display_performance_metrics():
