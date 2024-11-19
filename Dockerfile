@@ -38,9 +38,9 @@ RUN mamba install --name team4_env --yes --file requirements.txt && mamba clean 
 # Use pip for packages not available in conda-forge
 RUN /opt/conda/envs/team4_env/bin/pip install huggingface-hub matplotlib scikit-learn
 
-RUN source activate team4_env && mamba install --yes \
-     streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters langchain-mistralai faiss-cpu roman transformers && \
-     mamba clean --all -f -y
+# RUN source activate team4_env && mamba install --yes \
+#      streamlit jupyter langchain langchain-core langchain-community langchain-huggingface langchain-text-splitters langchain-mistralai faiss-cpu roman transformers && \
+#      mamba clean --all -f -y
      
 # # Install additional required libraries
 RUN pip install -qU langchain_milvus
@@ -72,7 +72,6 @@ RUN pip install PyPDF2
 # Set environment variables for Streamlit
 ENV STREAMLIT_SERVER_BASEURLPATH=/team4
 ENV STREAMLIT_SERVER_PORT=5004
-
 # Copy the application files into the container
 COPY . /app
 
@@ -106,4 +105,4 @@ RUN mkdir -p ~/.streamlit && \
 
 # Start Streamlit and Jupyter
 # CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter notebook --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password=''"]
-CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 & jupyter server --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password='' --ServerApp.root_dir='/app/jupyter' --ServerApp.base_url='/team4/jupyter'"]
+CMD ["sh", "-c", "streamlit run app.py --server.port=5004 --server.address=0.0.0.0 --server.baseUrlPath=/team4 --logger.level=error > /dev/null 2>&1 & jupyter server --ip=0.0.0.0 --port=6004 --no-browser --allow-root --ServerApp.token='' --ServerApp.password='' --ServerApp.root_dir='/app/jupyter' --ServerApp.base_url='/team4/jupyter'"]
