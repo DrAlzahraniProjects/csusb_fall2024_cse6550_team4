@@ -53,15 +53,15 @@ Once the container is running, you can access the application at:
 
 | **Answerable questions**                   |  **Unaswerable questions**                                                    |
 |-------------------------------------       |-------------------------------------------------------------------------------|
-| What is KnowLog?                           | what is RMMM plan?                                                            |
-| How does LLm's work?                       | Who is the chair of the department?                                           | 
-| What is regression testing?                | What is 6550 course about in csusb?                                           |
-| What is risk identification?               | who is Dean of computer science in CSUSB?                                     |
-| How knowlog is different from Unilog?      | What class does Dr. Alzahrani teach?                                          |
-| What is fault localisation?                | Who is Pressman?                                                              |
+| What is software engineering?                           | what is RMMM plan?                                                            |
+| what are language models?                       | Who is the chair of the department?                                           | 
+| What is pre training for source code?                | What is 6550 course about in csusb?                                           |
+| What is modular training?               | who is Dean of computer science in CSUSB?                                     |
+| what is knowlog?      | What class does Dr. Alzahrani teach?                                          |
+| What is multimodal learning?                | Who is Pressman?                                                              |
 | How chatGPT works?                         | Who is ITS department head in CSUSB?                                          |
-| What actually is artificial intelligence?  | Can i get class schdeule of CS department for Fall 2024?                      |
-| What is automated android bug?             | What is the minimum grade required to enroll for a comprehensive examination? |
+| What is generative artificial intelligence?  | Can i get class schdeule of CS department for Fall 2024?                      |
+| What are UI designs?             | What is the minimum grade required to enroll for a comprehensive examination? |
 
 
 ### Additional Information
