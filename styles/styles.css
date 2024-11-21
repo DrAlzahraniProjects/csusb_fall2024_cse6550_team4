@@ -1,8 +1,8 @@
 /* User message styles */
 .user-message {
     text-align: right;
-    background-color: #7a7878;
-    color: #FFFFFF;
+    background-color: #61A3BA;
+    color: #FFFFDD;
     border: 1px solid #3C3F41;
     border-radius: 10px;
     padding: 10px 15px;
@@ -16,8 +16,8 @@
 /* Bot message styles */
 .bot-message {
     text-align: left;
-    background-color: #7a7878;
-    color: #FFFFFF;
+    background-color: #61A3BA;
+    color: #FFFFDD;
     border: 1px solid #3C3F41;
     border-radius: 10px;
     padding: 10px 15px;
@@ -112,7 +112,7 @@
     padding: 10px 20px;
     font-size: 16px;
     color: white;
-    background-color: #7d7e7d;
+    background-color: #D2DE32;
     border: none;
     border-radius: 4px;
     text-align: center;

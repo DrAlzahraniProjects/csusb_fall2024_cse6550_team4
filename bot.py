@@ -206,7 +206,7 @@ def query_rag(query):
 
             # Create a unique link
             if source != "Unknown":
-                link = f'<a href="/team4/?view=pdf&file={data_dir}/{source}&page={page}" target="_blank">[more_info]</a>'
+                link = f'<a href="/team4/?view=pdf&file={data_dir}/{source}&page={page}" target="_blank" style="color : white">[more_info]</a>'
                 unique_links.add(link)  # Adds only if link is unique
 
         # Append source links to response text
