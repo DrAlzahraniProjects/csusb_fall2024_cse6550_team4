@@ -15,16 +15,15 @@ st.set_page_config(page_title="Team4 Chatbot", layout="wide")
 
 # Define answerable and unanswerable questions
 answerable_questions = {
-        "What is KnowLog?".lower(),
-        "How does LLm's work?".lower(),
-        "What is convo-genAI?".lower(),
-        "What is risk identification?".lower(),
-        "How UniLog works?".lower(),
-        "What is smart contract?".lower(),
-        "Explain briefly on EDEFuzz?".lower(),
-        "Effects of GILT?".lower(),
-        "what is the problem and solution of research paper related to convogen-AI?".lower(),
-        "How vulnerabilities are detected?".lower()
+        "What is software engineering?".lower(),
+        "What are large language models?".lower(),
+        "what is pre training for source code?".lower(),
+        "What is modular training?".lower(),
+        "What is multimodal learning?".lower(),
+        "How chatgpt works?".lower(),
+        "What is generative Artificial intelligence?".lower(),
+        "What are UI designs?".lower()
+        "How LLm’s works?".lower()
     }
 unanswerable_questions = {
         "Who teaches independent study class?".lower(),
