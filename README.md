@@ -51,17 +51,17 @@ Once the container is running, you can access the application at:
 - Jupyter Notebook: http://localhost:6004/team4/jupyter
 ### SQA for confusion matrix
 
-| **Answerable questions**                   |  **Unaswerable questions**                 |
-|-------------------------------------       |--------------------------------------------|
-| What is KnowLog?                           | How do I connect to Starbucks Wi-Fi?       |
-| How does LLm's work?                       | What is refactoring?                       | 
-| What is regression testing?                | Can you write code for user interface?     |
-| What is risk identification?               | Where is CSUSB located?                    |
-| How knowlog is different from Unilog?      | What class does Dr. Alzahrani teach?       |
-| What is fault localisation?                | Who is Pressman?                           |
-| How chatGPT works?                         | What is software development?              |
-| What actually is artificial intelligence?  | What is software engineering class about?  |
-| What is automated android bug?             | How to enroll software engineering course? |
+| **Answerable questions**                   |  **Unaswerable questions**                                                    |
+|-------------------------------------       |-------------------------------------------------------------------------------|
+| What is KnowLog?                           | what is RMMM plan?                                                            |
+| How does LLm's work?                       | Who is the chair of the department?                                           | 
+| What is regression testing?                | What is 6550 course about in csusb?                                           |
+| What is risk identification?               | who is Dean of computer science in CSUSB?                                     |
+| How knowlog is different from Unilog?      | What class does Dr. Alzahrani teach?                                          |
+| What is fault localisation?                | Who is Pressman?                                                              |
+| How chatGPT works?                         | Who is ITS department head in CSUSB?                                          |
+| What actually is artificial intelligence?  | Can i get class schdeule of CS department for Fall 2024?                      |
+| What is automated android bug?             | What is the minimum grade required to enroll for a comprehensive examination? |
 
 
 ### Additional Information
