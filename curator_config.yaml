@@ -1,5 +1,2 @@
 model:
-  type: "asr"
-  pretrained_model: "QuartzNet15x5"
-  data:
-    path: "/data/audio_files"
+  type: 
