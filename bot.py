@@ -5,20 +5,18 @@ from dotenv import load_dotenv
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.schema import Document
 from langchain_core.prompts import PromptTemplate
-#from langchain_mistralai import MistralAIEmbeddings
 from langchain_mistralai.chat_models import ChatMistralAI
-#from langchain_cohere import ChatCohere
 from langchain_milvus import Milvus
-from langchain_community.document_loaders import WebBaseLoader, RecursiveUrlLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.chains import create_retrieval_chain
 from langchain_huggingface import HuggingFaceEmbeddings
 from pymilvus import connections, utility
-from requests.exceptions import HTTPError
 from httpx import HTTPStatusError
-from langchain_community.document_loaders import PyPDFDirectoryLoader
-from roman import toRoman
 from PyPDF2 import PdfReader
+from langchain.schema import BaseRetriever
+import numpy as np
+from pydantic import Field
+from typing import List, Any
 
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
@@ -27,10 +25,7 @@ MILVUS_URI = "./milvus/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 data_dir = "./volumes"
 CACHE_FILE = "./document_cache.pkl"
-from langchain.schema import BaseRetriever
-import numpy as np
-from pydantic import Field
-from typing import List, Any
+
 
 class ScoreThresholdRetriever(BaseRetriever):
     """
@@ -280,33 +275,6 @@ def initialize_milvus(uri: str=MILVUS_URI):
     print("Vector store initialization complete.")
     return vector_store
 
-
-def load_documents_from_web():
-    """
-    Load the documents from the web and store the page contents
-
-    Returns:
-        list: The documents loaded from the web
-    """
-    # loader = RecursiveUrlLoader(
-    #     url=CORPUS_SOURCE,
-    #     prevent_outside=True,
-    #     base_url=CORPUS_SOURCE
-    # )
-    documents = []
-    for url in CORPUS_SOURCE:
-        loader = WebBaseLoader(url)
-        try:
-            loaded_docs = loader.load()
-            documents.extend(loaded_docs)  # Add loaded documents to the main list
-            print(f"Documents loaded from {url}")
-        except Exception as e:
-            print(f"Failed to load documents from {url}: {e}")
-
-    # loader = WebBaseLoader(CORPUS_SOURCE)
-    # documents = loader.load()
-    
-    return documents
 
 def split_documents(documents):
     """
