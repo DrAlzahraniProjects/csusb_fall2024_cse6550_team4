@@ -11,7 +11,7 @@ from uuid import uuid4
 # Initialize database client
 db_client = DatabaseClient()
 # Configure page
-st.set_page_config(page_title="Team4 Chatbot", layout="wide")
+st.set_page_config(page_title="Research Paper Chatbot", layout="wide")
 
 # Define answerable and unanswerable questions
 answerable_questions = {
