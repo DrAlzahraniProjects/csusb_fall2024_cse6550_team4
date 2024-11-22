@@ -18,9 +18,11 @@ import numpy as np
 from pydantic import Field
 from typing import List, Any
 
+# Load environment variables
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
+# Configuration constants
 MILVUS_URI = "./milvus/milvus_vector.db"
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 data_dir = "./volumes"
@@ -29,13 +31,15 @@ CACHE_FILE = "./document_cache.pkl"
 
 class ScoreThresholdRetriever(BaseRetriever):
     """
-    A retriever that retrieves relevant documents based on similarity scores from a vector store.
+    A custom retriever that filters documents based on a similarity score threshold.
 
     Attributes:
-        vector_store (Any): The vector store for similarity search.
-        score_threshold (float): Minimum normalized score to consider a document relevant.
-        k (int): Number of documents to retrieve.
+        vector_store (Any): Vector store used for similarity search.
+        score_threshold (float): Minimum score required to consider a document relevant.
+        k (int): Number of top documents to retrieve.
 
+    Methods:
+        get_relevant_documents(query): Retrieves documents with scores above the threshold.
     """
 
     vector_store: Any = Field(..., description="Vector store for similarity search")
@@ -44,22 +48,22 @@ class ScoreThresholdRetriever(BaseRetriever):
 
     def get_relevant_documents(self, query:str) -> List[Any]:
         """
-        Get relevant documents based on the query
+        Retrieve documents relevant to the query with a normalized score above the threshold.
 
         Args:
-            query (str): The query string
+            query (str): Query string for searching the vector store.
 
         Returns:
-            List[Document]: The list of relevant documents
+            List[Document]: List of documents meeting the relevance criteria.
         """
         try:
             docs_and_scores = self.vector_store.similarity_search_with_score(query, k=self.k)
-        except Exception:
-            return []
+        except Exception as e:
+            print(f"Error during similarity search: {e}")
+            return [] # Return an empty list on search failure
 
         if not docs_and_scores:
-        # If no documents are found, return an empty list or a default message
-            return []
+            return [] # Handle cases where no documents are retrieved
 
         # Initialize variables for tracking the most relevant document
         highest_score = -1
@@ -82,13 +86,13 @@ class ScoreThresholdRetriever(BaseRetriever):
     @staticmethod
     def _normalize_score(score):
         """
-        Normalize the score to a value between 0 and 1
+        Normalize the score to a range of [0, 1].
 
         Args:
-            score (float): The score to be normalized
+            score (float): Raw similarity score.
 
         Returns:
-            float: The normalized score
+            float: Normalized similarity score.
         """
         # Assuming Milvus L2 distance, adjust based on your distance metric
         max_distance = np.sqrt(2)
@@ -97,18 +101,24 @@ class ScoreThresholdRetriever(BaseRetriever):
 
 def get_embedding_function():
     """
-    returns embedding function for the model
+    Initializes and returns the HuggingFace embedding function.
 
     Returns:
-        embedding function
+        HuggingFaceEmbeddings: The embedding function instance.
     """
     embedding_function = HuggingFaceEmbeddings(model_name=MODEL_NAME)
     return embedding_function
 
 def load_pdfs_in_batches(data_dir, batch_size=20):
     """
-    Load PDFs in batches to avoid memory overload.
-    If a cache file exists, load previously processed files from it and only process new files.
+    Generator that processes PDF files in batches to avoid memory overload.
+
+    Args:
+        data_dir (str): Directory containing PDF files.
+        batch_size (int): Number of files to process in each batch.
+
+    Yields:
+        List[Document]: A batch of documents extracted from PDFs.
     """
     documents = []
     file_list = [f for f in os.listdir(data_dir) if f.endswith(".pdf")]
@@ -128,7 +138,11 @@ def load_pdfs_in_batches(data_dir, batch_size=20):
         
         for filename in batch_files:
             pdf_path = os.path.join(data_dir, filename)
-            reader = PdfReader(pdf_path)
+            try:
+                reader = PdfReader(pdf_path)
+            except Exception as e:
+                print(f"Error reading PDF {pdf_path}: {e}")
+                continue  # Skip to the next file
 
             for page_num, page in enumerate(reader.pages):
                 text = page.extract_text() or ""
@@ -278,16 +292,17 @@ def initialize_milvus(uri: str=MILVUS_URI):
 
 def split_documents(documents):
     """
-    Split the documents into chunks
+    Splits documents into smaller chunks for better processing.
 
     Args:
-        documents (list): The documents to split
+        documents (List[Document]): List of documents to split.
 
     Returns:
-        list: list of chunks of documents
+        List[Document]: List of chunked documents.
     """
     # Create a text splitter to split the documents into chunks
     text_splitter = RecursiveCharacterTextSplitter(
+        # Constants for embedding and chunking
         chunk_size=2000,  # Split the text into chunks of 1000 characters
         chunk_overlap=200,  # Overlap the chunks by 300 characters
         is_separator_regex=False,  # Don't split on regex
