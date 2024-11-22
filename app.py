@@ -51,7 +51,7 @@ def display_performance_metrics():
         result = db_client.get_performance_metrics()
     except Exception:
         st.sidebar.error("Error retrieving performance metrics.")
-        result = {'sensitivity': '-', 'specificity': '-', 'accuracy': '-', 'precision': '-', 'f1_score': '-', 
+        result = {'sensitivity': '-', 'specificity': '-', 'accuracy': '-', 'precision': '-', 'f1_score': '-','recall':'-', 
                   'true_positive': '-', 'false_negative': '-', 'false_positive': '-', 'true_negative': '-'}
 
 
@@ -89,6 +89,9 @@ def display_performance_metrics():
             </div>
             <div class='box box-grey'>
                 F1 Score: {result['f1_score']}
+            </div>
+            <div class='box box-grey'>
+                Recall: {result['recall']}
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -213,7 +216,7 @@ else:
     # Load the CSS file and apply the styles
     with open(css_file_path) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-    st.title("Team 4 Chatbot")
+    st.title("Research Paper Chatbot")
 
 
 
