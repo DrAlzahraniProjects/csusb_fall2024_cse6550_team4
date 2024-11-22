@@ -16,14 +16,14 @@ st.set_page_config(page_title="Research Paper Chatbot", layout="wide")
 # Define answerable and unanswerable questions
 answerable_questions = {
         "What is KnowLog?".lower(),
-        "How does LLm's work?".lower(),
+        "How chatGPT works?".lower(),
         "What is convo-genAI?".lower(),
-        "What is risk identification?".lower(),
-        "How UniLog works?".lower(),
-        "What is smart contract?".lower(),
-        "Explain briefly on EDEFuzz?".lower(),
-        "Effects of GILT?".lower(),
-        "what is the problem and solution of research paper related to convogen-AI?".lower(),
+        "What is the effectiveness of codex in few shot learning?".lower(),
+        "What are convolutional networks?".lower(),
+        "How large language models work?".lower(),
+        "What is P-EPR?".lower(),
+        "What is generative artificial intelligence?".lower(),
+        "What is the problem and solution of research paper related to convogen-AI?".lower(),
         "How vulnerabilities are detected?".lower()
     }
 unanswerable_questions = {
