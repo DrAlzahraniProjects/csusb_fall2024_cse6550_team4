@@ -11,19 +11,20 @@ from uuid import uuid4
 # Initialize database client
 db_client = DatabaseClient()
 # Configure page
-st.set_page_config(page_title="Team4 Chatbot", layout="wide")
+st.set_page_config(page_title="Research Paper Chatbot", layout="wide")
 
 # Define answerable and unanswerable questions
 answerable_questions = {
-        "What is software engineering?".lower(),
-        "What are large language models?".lower(),
-        "what is pre training for source code?".lower(),
-        "What is modular training?".lower(),
-        "What is multimodal learning?".lower(),
-        "How chatgpt works?".lower(),
-        "What is generative Artificial intelligence?".lower(),
-        "What are UI designs?".lower(),
-        "How LLm’s works?".lower(),
+        "What is KnowLog?".lower(),
+        "How chatGPT works?".lower(),
+        "What is convo-genAI?".lower(),
+        "What is the effectiveness of codex in few shot learning?".lower(),
+        "What are convolutional networks?".lower(),
+        "How large language models work?".lower(),
+        "What is P-EPR?".lower(),
+        "What is generative artificial intelligence?".lower(),
+        "What is the problem and solution of research paper related to convogen-AI?".lower(),
+        "How vulnerabilities are detected?".lower()
     }
 unanswerable_questions = {
         "Who teaches independent study class?".lower(),
@@ -50,7 +51,7 @@ def display_performance_metrics():
         result = db_client.get_performance_metrics()
     except Exception:
         st.sidebar.error("Error retrieving performance metrics.")
-        result = {'sensitivity': '-', 'specificity': '-', 'accuracy': '-', 'precision': '-', 'f1_score': '-', 
+        result = {'sensitivity': '-', 'specificity': '-', 'accuracy': '-', 'precision': '-', 'f1_score': '-','recall':'-', 
                   'true_positive': '-', 'false_negative': '-', 'false_positive': '-', 'true_negative': '-'}
 
 
@@ -88,6 +89,9 @@ def display_performance_metrics():
             </div>
             <div class='box box-grey'>
                 F1 Score: {result['f1_score']}
+            </div>
+            <div class='box box-grey'>
+                Recall: {result['recall']}
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -212,7 +216,7 @@ else:
     # Load the CSS file and apply the styles
     with open(css_file_path) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-    st.title("Team 4 Chatbot")
+    st.title("Research Paper Chatbot")
 
 
 
