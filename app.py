@@ -22,8 +22,8 @@ answerable_questions = {
         "What is multimodal learning?".lower(),
         "How chatgpt works?".lower(),
         "What is generative Artificial intelligence?".lower(),
-        "What are UI designs?".lower()
-        "How LLm’s works?".lower()
+        "What are UI designs?".lower(),
+        "How LLm’s works?".lower(),
     }
 unanswerable_questions = {
         "Who teaches independent study class?".lower(),
