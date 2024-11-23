@@ -5,66 +5,56 @@ from dotenv import load_dotenv
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.schema import Document
 from langchain_core.prompts import PromptTemplate
-#from langchain_mistralai import MistralAIEmbeddings
 from langchain_mistralai.chat_models import ChatMistralAI
-#from langchain_cohere import ChatCohere
 from langchain_milvus import Milvus
-from langchain_community.document_loaders import WebBaseLoader, RecursiveUrlLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.chains import create_retrieval_chain
 from langchain_huggingface import HuggingFaceEmbeddings
 from pymilvus import connections, utility
-from requests.exceptions import HTTPError
 from httpx import HTTPStatusError
-from langchain_community.document_loaders import PyPDFDirectoryLoader
-from roman import toRoman
 from PyPDF2 import PdfReader
-
-load_dotenv()
-MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
-
-MILVUS_URI = "./milvus/milvus_vector.db"
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-data_dir = "./volumes"
-CACHE_FILE = "./document_cache.pkl"
 from langchain.schema import BaseRetriever
 import numpy as np
 from pydantic import Field
 from typing import List, Any
 
+# Load environment variables
+load_dotenv()
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
+
+# Configuration constants
+MILVUS_URI = "./milvus/milvus_vector.db"
+MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+data_dir = "./volumes"
+CACHE_FILE = "./document_cache.pkl"
+
+# Purpose: Define the custom retriever logic for filtering relevant documents
+# Input: User query as a string
+# Output: List of relevant documents above the threshold score
+# Processing: Performs a similarity search on the vector store, filters documents based on score threshold
 class ScoreThresholdRetriever(BaseRetriever):
-    """
-    A retriever that retrieves relevant documents based on similarity scores from a vector store.
-
-    Attributes:
-        vector_store (Any): The vector store for similarity search.
-        score_threshold (float): Minimum normalized score to consider a document relevant.
-        k (int): Number of documents to retrieve.
-
-    """
-
     vector_store: Any = Field(..., description="Vector store for similarity search")
     score_threshold: float = Field(default=0.1, description="Minimum score threshold for a document to be considered relevant")
     k: int = Field(default=1, description="Number of documents to retrieve")
 
     def get_relevant_documents(self, query:str) -> List[Any]:
         """
-        Get relevant documents based on the query
+        Retrieve documents relevant to the query with a normalized score above the threshold.
 
         Args:
-            query (str): The query string
+            query (str): Query string for searching the vector store.
 
         Returns:
-            List[Document]: The list of relevant documents
+            List[Document]: List of documents meeting the relevance criteria.
         """
         try:
             docs_and_scores = self.vector_store.similarity_search_with_score(query, k=self.k)
-        except Exception:
-            return []
+        except Exception as e:
+            print(f"Error during similarity search: {e}")
+            return [] # Return an empty list on search failure
 
         if not docs_and_scores:
-        # If no documents are found, return an empty list or a default message
-            return []
+            return [] # Handle cases where no documents are retrieved
 
         # Initialize variables for tracking the most relevant document
         highest_score = -1
@@ -87,34 +77,33 @@ class ScoreThresholdRetriever(BaseRetriever):
     @staticmethod
     def _normalize_score(score):
         """
-        Normalize the score to a value between 0 and 1
+        Normalize the score to a range of [0, 1].
 
         Args:
-            score (float): The score to be normalized
+            score (float): Raw similarity score.
 
         Returns:
-            float: The normalized score
+            float: Normalized similarity score.
         """
         # Assuming Milvus L2 distance, adjust based on your distance metric
         max_distance = np.sqrt(2)
         normalized = 1 - (score / max_distance)
         return max(0, min(1, normalized))
 
+# Purpose: Initialize the HuggingFace embedding function
+# Input: None
+# Output: Embedding function instance
+# Processing: Loads the HuggingFaceEmbeddings with a predefined model name
 def get_embedding_function():
-    """
-    returns embedding function for the model
-
-    Returns:
-        embedding function
-    """
     embedding_function = HuggingFaceEmbeddings(model_name=MODEL_NAME)
     return embedding_function
 
+# Purpose: Load and process PDF files in batches
+# Input: Directory path for PDFs and batch size
+# Output: Yields a batch of documents extracted from PDFs
+# Processing: Loads PDF files, processes pages into Document objects, and caches processed files
 def load_pdfs_in_batches(data_dir, batch_size=20):
-    """
-    Load PDFs in batches to avoid memory overload.
-    If a cache file exists, load previously processed files from it and only process new files.
-    """
+    
     documents = []
     file_list = [f for f in os.listdir(data_dir) if f.endswith(".pdf")]
     processed_files = {}
@@ -133,7 +122,11 @@ def load_pdfs_in_batches(data_dir, batch_size=20):
         
         for filename in batch_files:
             pdf_path = os.path.join(data_dir, filename)
-            reader = PdfReader(pdf_path)
+            try:
+                reader = PdfReader(pdf_path)
+            except Exception as e:
+                print(f"Error reading PDF {pdf_path}: {e}")
+                continue  # Skip to the next file
 
             for page_num, page in enumerate(reader.pages):
                 text = page.extract_text() or ""
@@ -154,17 +147,12 @@ def load_pdfs_in_batches(data_dir, batch_size=20):
     if not new_files:
         print("No new files to process.")
 
-
+# Purpose: Generate a response using RAG (Retrieval-Augmented Generation) model
+# Input: User query as a string
+# Output: Response text with citations
+# Processing: Loads model, sets up retrieval chain, and generates response using retrieved documents
 def query_rag(query):
-    """
-    Entry point for the RAG model to generate an answer to a given query.
-
-    Args:
-        query (str): The query string for which an answer is to be generated.
     
-    Returns:
-        str: The formatted answer with a unique source link (if available).
-    """
     # Define the model
     model = ChatMistralAI(model='open-mistral-7b', api_key=MISTRAL_API_KEY, temperature=0.2)
     print("Model Loaded")
@@ -222,14 +210,12 @@ def query_rag(query):
         return f"HTTPStatusError: {e}"
 
 
-
+# Purpose: Create the prompt template for the RAG model
+# Input: None
+# Output: PromptTemplate object for the model
+# Processing: Defines a static template for generating answers to user queries
 def create_prompt():
-    """
-    Create a prompt template for the RAG model
-
-    Returns:
-        PromptTemplate: The prompt template for the RAG model
-    """
+    
     # Define the prompt template
     PROMPT_TEMPLATE = """
     Human: You are an AI assistant, and provides answers to questions by using fact based and statistical information when possible.
@@ -256,17 +242,12 @@ def create_prompt():
 
     return prompt
 
-
+# Purpose: Initialize the vector store for the RAG model
+# Input: URI string (optional), path to the local Milvus database
+# Output: Vector store created or loaded
+# Processing: Loads PDF documents in batches, splits them into chunks, and stores them in a Milvus vector store
 def initialize_milvus(uri: str=MILVUS_URI):
-    """
-    Initialize the vector store for the RAG model
 
-    Args:
-        uri (str, optional): Path to the local milvus db. Defaults to MILVUS_URI.
-
-    Returns:
-        vector_store: The vector store created
-    """
     embeddings = get_embedding_function()
     vector_store = None
 
@@ -280,46 +261,15 @@ def initialize_milvus(uri: str=MILVUS_URI):
     print("Vector store initialization complete.")
     return vector_store
 
-
-def load_documents_from_web():
-    """
-    Load the documents from the web and store the page contents
-
-    Returns:
-        list: The documents loaded from the web
-    """
-    # loader = RecursiveUrlLoader(
-    #     url=CORPUS_SOURCE,
-    #     prevent_outside=True,
-    #     base_url=CORPUS_SOURCE
-    # )
-    documents = []
-    for url in CORPUS_SOURCE:
-        loader = WebBaseLoader(url)
-        try:
-            loaded_docs = loader.load()
-            documents.extend(loaded_docs)  # Add loaded documents to the main list
-            print(f"Documents loaded from {url}")
-        except Exception as e:
-            print(f"Failed to load documents from {url}: {e}")
-
-    # loader = WebBaseLoader(CORPUS_SOURCE)
-    # documents = loader.load()
-    
-    return documents
-
+# Purpose: Split documents into smaller chunks for better processing
+# Input: List of Document objects
+# Output: List of chunked Document objects
+# Processing: Uses a text splitter to break large documents into smaller, more manageable chunks
 def split_documents(documents):
-    """
-    Split the documents into chunks
-
-    Args:
-        documents (list): The documents to split
-
-    Returns:
-        list: list of chunks of documents
-    """
+    
     # Create a text splitter to split the documents into chunks
     text_splitter = RecursiveCharacterTextSplitter(
+        # Constants for embedding and chunking
         chunk_size=2000,  # Split the text into chunks of 1000 characters
         chunk_overlap=200,  # Overlap the chunks by 300 characters
         is_separator_regex=False,  # Don't split on regex
@@ -328,21 +278,11 @@ def split_documents(documents):
     docs = text_splitter.split_documents(documents)
     return docs
 
-
+# Purpose: Initialize a Milvus vector store using documents and embeddings
+# Input: List of Document objects, embeddings function, URI string
+# Output: The created or loaded vector store
+# Processing: Connects to Milvus database, creates a collection, and stores the documents
 def create_vector_store(docs, embeddings, uri):
-    """
-    This function initializes a vector store using the provided documents and embeddings.
-    It connects to a local Milvus database specified by the URI. If a collection named "IT_support" already exists,
-    it loads the existing vector store; otherwise, it creates a new vector store and drops any existing one.
-
-    Args:
-        docs (list): A list of documents to be stored in the vector store.
-        embeddings : A function or model that generates embeddings for the documents.
-        uri (str): Path to the local milvus db
-
-    Returns:
-        vector_store: The vector store created
-    """
     # Create the directory if it does not exist
     head = os.path.split(uri)
     os.makedirs(head[0], exist_ok=True)
@@ -371,17 +311,12 @@ def create_vector_store(docs, embeddings, uri):
         print("Vector Store Created")
     return vector_store
 
-
+# Purpose: Load an existing vector store from the local Milvus database
+# Input: URI string (optional), path to the local Milvus database
+# Output: Loaded vector store
+# Processing: Connects to the existing Milvus database and loads the vector store
 def load_exisiting_db(uri=MILVUS_URI):
-    """
-    Load an existing vector store from the local Milvus database specified by the URI.
-
-    Args:
-        uri (str, optional): Path to the local milvus db. Defaults to MILVUS_URI.
-
-    Returns:
-        vector_store: The vector store created
-    """
+    
     # Load an existing vector store
     vector_store = Milvus(
         collection_name="research_paper_chatbot",
@@ -391,17 +326,11 @@ def load_exisiting_db(uri=MILVUS_URI):
     print("Vector Store Loaded")
     return vector_store
 
+# Purpose: Extract answer and source information from the RAG response
+# Input: Dictionary containing 'answer' and 'context' keys
+# Output: Formatted string containing the answer and up to 5 source references
+# Processing: Parses the context for source information and formats the response
 def get_answer_with_source(response):
-    """
-    Extract the answer and relevant source information from the response.
-    This function processes the response from the RAG chain, extracting the answer
-    and up to 5 source references (page numbers) from the context documents.
-
-    Args:
-        response (dict): The response dictionary from the RAG chain, containing 'answer' and 'context' keys.
-    Returns:
-        str: A formatted string containing the answer followed by source information.
-    """
     # Extract the answer
     answer = response.get('answer', 'No answer found.')
 

@@ -112,10 +112,26 @@
     padding: 10px 20px;
     font-size: 16px;
     color: white;
-    background-color: #D2DE32;
+    background-color: #9bf08f;
     border: none;
     border-radius: 4px;
     text-align: center;
     text-decoration: none;
     width: 100%;
+}
+
+.reset-button {
+    background-color: #f44336; /* Red background */
+    color: white; /* White text */
+    border-radius: 12px; /* Rounded corners */
+    padding: 10px 20px; /* Padding */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    border: none; /* No border */
+    width: 100%; /* Make it full width */
+}
+
+.reset-button:hover {
+    background-color: #e53935; /* Darker red on hover */
+    cursor: pointer; /* Pointer cursor on hover */
 }
