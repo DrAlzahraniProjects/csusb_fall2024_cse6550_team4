@@ -96,59 +96,53 @@ def display_performance_metrics():
     create_sidebar(result)
     reset_metrics()
    
+def handle_like_feedback(previous_feedback, metric_type):
+    """Handles the case where feedback is 'like'."""
+    if previous_feedback is None:
+        db_client.increment_performance_metric(f"true_{metric_type}")
+    elif previous_feedback == "dislike":
+        db_client.increment_performance_metric(f"false_{metric_type}", -1)
+        db_client.increment_performance_metric(f"true_{metric_type}")
+
+def handle_dislike_feedback(previous_feedback, metric_type):
+    """Handles the case where feedback is 'dislike'."""
+    if previous_feedback is None:
+        db_client.increment_performance_metric(f"false_{metric_type}")
+    elif previous_feedback == "like":
+        db_client.increment_performance_metric(f"true_{metric_type}", -1)
+        db_client.increment_performance_metric(f"false_{metric_type}")
+
+def handle_neutral_feedback(previous_feedback, metric_type):
+    """Handles the case where feedback is 'neutral'."""
+    if previous_feedback == "like":
+        db_client.increment_performance_metric(f"true_{metric_type}", -1)
+    elif previous_feedback == "dislike":
+        db_client.increment_performance_metric(f"false_{metric_type}", -1)
+
+def update_feedback_metric(question, feedback, previous_feedback, metric_type):
+    """Updates performance metrics based on user feedback."""
+    if feedback == 1:  # Like
+        handle_like_feedback(previous_feedback, metric_type)
+    elif feedback == 0:  # Dislike
+        handle_dislike_feedback(previous_feedback, metric_type)
+    else:  # Neutral
+        handle_neutral_feedback(previous_feedback, metric_type)
+
+
+# Purpose: Handle user feedback and adjust performance metrics
+# Input: Unique message ID for feedback tracking
+# Output: Updates metrics and chat history
 def handle_feedback(assistant_message_id):
-    previous_feedback = st.session_state.chat_history[assistant_message_id].get("feedback", None)
+    question = st.session_state.chat_history[assistant_message_id.replace("assistant_message", "user_message", 1)]["content"]
     feedback = st.session_state.get(f"feedback_{assistant_message_id}", None)
-    user_message_id = assistant_message_id.replace("assistant_message", "user_message", 1)
-    question = st.session_state.chat_history[user_message_id]["content"]
-
+    previous_feedback = st.session_state.chat_history[assistant_message_id].get("feedback", None)
     if question.lower().strip() in answerable_questions:
-        if feedback == 1:
-            if previous_feedback == None:
-                db_client.increment_performance_metric("true_positive")
-            elif previous_feedback == "dislike":
-                db_client.increment_performance_metric("false_negative", -1)
-                db_client.increment_performance_metric("true_positive")
-            st.session_state.chat_history[assistant_message_id]["feedback"] = "like"
-        elif feedback == 0:
-            if previous_feedback == None:
-                db_client.increment_performance_metric("false_negative")
-            elif previous_feedback == "like":
-                db_client.increment_performance_metric("true_positive", -1)
-                db_client.increment_performance_metric("false_negative")
-            st.session_state.chat_history[assistant_message_id]["feedback"] = "dislike"
-        else:
-            if previous_feedback == "like":
-                db_client.increment_performance_metric("true_positive", -1)
-            elif previous_feedback == "dislike":
-                db_client.increment_performance_metric("false_negative", -1)
-            st.session_state.chat_history[assistant_message_id]["feedback"] = None
+        update_feedback_metric(question, feedback, previous_feedback, "positive")
     elif question.lower().strip() in unanswerable_questions:
-        if feedback == 1:
-            if previous_feedback == None:
-                db_client.increment_performance_metric("true_negative")
-            elif previous_feedback == "dislike":
-                db_client.increment_performance_metric("false_positive", -1)
-                db_client.increment_performance_metric("true_negative")
-            st.session_state.chat_history[assistant_message_id]["feedback"] = "like"
-        elif feedback == 0:
-            if previous_feedback == None:
-                db_client.increment_performance_metric("false_positive")
-            elif previous_feedback == "like":
-                db_client.increment_performance_metric("true_negative", -1)
-                db_client.increment_performance_metric("false_positive")
-            st.session_state.chat_history[assistant_message_id]["feedback"] = "dislike"
-        else:
-            if previous_feedback == "like":
-                db_client.increment_performance_metric("true_negative", -1)
-            elif previous_feedback == "dislike":
-                db_client.increment_performance_metric("false_positive", -1)
-            st.session_state.chat_history[assistant_message_id]["feedback"] = None
-            
+        update_feedback_metric(question, feedback, previous_feedback, "negative")
     db_client.update_performance_metrics()
-        
-
-
+    st.session_state.chat_history[assistant_message_id]["feedback"] = "like" if feedback == 1 else "dislike" if feedback == 0 else None
+       
 def clean_repeated_text(text):
     if text is None:
         return ""
@@ -175,25 +169,23 @@ def serve_pdf():
     else:
         st.error("No PDF file specified in query parameters")
 
-# Load the CSS file and apply the styles
-if "view" in st.query_params and st.query_params["view"] == "pdf":
-        serve_pdf()
-else:
-    # Load the CSS file and apply the styles
-    with open(css_file_path) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-    st.title("Research Paper Chatbot")
+def render_chat_history():
+    """Render the chat history with feedback options."""
+    for message_id, message in st.session_state.chat_history.items():
+        if message['role'] == 'user':
+            st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
+            st.feedback("thumbs",key=f"feedback_{message_id}",on_change=lambda: handle_feedback(message_id))
+        else:
+            st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True)
 
-
-
-    # Initialize session state if it doesn't exist
+def create_user_session():
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = {}
         with st.spinner("Initializing, Please Wait..."):
             db_client.create_performance_metrics_table()
             vector_store = initialize_milvus()
 
-
+def create_chat_history():
     for message_id,message in st.session_state.chat_history.items():
         if message['role'] == 'user':
             st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
@@ -205,35 +197,52 @@ else:
             )
         else:
             st.markdown(f"<div class='bot-message'>{message['content']}</div>", unsafe_allow_html=True) 
-        
-    # Display performance metrics in the sidebar
-    display_performance_metrics()
-    if user_input:= st.chat_input("Message writing assistant"):
-        if user_input.strip():
-            unique_id = str(uuid4())
-            user_message_id = f"user_message_{unique_id}"
-            bot_message_id = f"bot_message{unique_id}"
-            st.session_state.chat_history[user_message_id] = {"role": "user", "content": user_input}
-            st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
-            with st.spinner("Response Generating, please wait..."):
-                rag_output = query_rag(user_input)
-                if isinstance(rag_output, tuple):
-                    bot_response = rag_output[0]  # Extract the response part
-                else:
-                    bot_response = str(rag_output)
 
+def handle_user_input(user_input):
+    unique_id = str(uuid4())
+    user_message_id = f"user_message_{unique_id}"
+    st.session_state.chat_history[user_message_id] = {"role": "user", "content": user_input}
+    st.markdown(f"<div class='user-message'>{user_input}</div>", unsafe_allow_html=True)
+    return unique_id  # Return the unique ID for further processing
 
-
-                cleaned_response = clean_repeated_text(bot_response)
-                if cleaned_response:
-                    st.session_state.chat_history[bot_message_id] = {"role": "bot", "content": cleaned_response}
-                    st.rerun()
-                else:
-                    st.error("Sorry, I couldn't find a response to your question.")
+def generate_bot_response(user_input, unique_id):
+    bot_message_id = f"bot_message_{unique_id}"
+    with st.spinner("Response Generating, please wait..."):
+        rag_output = query_rag(user_input)
+        bot_response = rag_output[0] if isinstance(rag_output, tuple) else str(rag_output)
+        cleaned_response = clean_repeated_text(bot_response)
+        if cleaned_response:
+            st.session_state.chat_history[bot_message_id] = {"role": "bot", "content": cleaned_response}
+            st.rerun()
         else:
-            st.error("Input cannot be empty.")
+            st.error("Sorry, I couldn't find a response to your question.")
+
+def process_user_input(user_input):
+    """Main function to process user input by calling helper functions."""
+    unique_id = handle_user_input(user_input)  # Handle user input and get the unique ID
+    generate_bot_response(user_input, unique_id)  # Generate and process the bot's response
+
+# Load the CSS file and apply the styles
+
+
+def main():
+    if "view" in st.query_params and st.query_params["view"] == "pdf":
+        serve_pdf()
+    else:
+        with open(css_file_path) as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+        st.title("Research Paper Chatbot")
+        create_user_session()
+        create_chat_history()  
+        display_performance_metrics()
+        if user_input:= st.chat_input("Message writing assistant"):
+            if user_input.strip():
+                process_user_input(user_input)
+            else:
+                st.error("Input cannot be empty.")
+
 # Save the chat history in the session state
 if __name__ == "__main__":
-    pass
+    main()
 
 
