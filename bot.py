@@ -181,6 +181,8 @@ def query_rag(query):
 
         # Collect unique links
         unique_links = set()
+        if not relevant_docs:
+            return "Sorry, I don't have related context for provided context , I can provide information related to research papers let me know if you have any query related to research papers."
         for doc in relevant_docs:
             metadata = doc.metadata if hasattr(doc, "metadata") else {}
             source = metadata.get("source", "Unknown").split("/")[-1]

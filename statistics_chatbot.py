@@ -1,7 +1,11 @@
 # Importing the SQLite library for database operations
 import sqlite3  
 
-# A class to manage database operations for tracking and updating performance metrics
+# Purpose: Initialize the DatabaseClient with a connection to the SQLite database.
+# Input: db_path (str) - The path to the SQLite database file (default: "confusion_matrix.db").
+# Output: A connection to the SQLite database.
+# Processing: Establishes a connection to the SQLite database.
+
 class DatabaseClient:
     """
     A client to manage confusion matrix performance metrics using SQLite.
@@ -13,7 +17,11 @@ class DatabaseClient:
         """
         self.connection = sqlite3.connect(db_path)
 
-    # Creates the performance_metrics table and initializes it with default values
+# Purpose: Create the performance_metrics table and initialize it with default values.
+# Input: None
+# Output: A table created in the database with initial values for performance metrics.
+# Processing: Drops the existing table if it exists, creates a new table, and inserts default values for the performance metrics.
+
     def create_performance_metrics_table(self):
         with self.connection:
             self.connection.execute("DROP TABLE IF EXISTS performance_metrics;")
@@ -36,8 +44,12 @@ class DatabaseClient:
                 INSERT INTO performance_metrics (id, true_positive, true_negative, false_positive, false_negative, accuracy, precision, sensitivity, specificity, f1_score, recall)
                 VALUES (1, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
             ''')
+# Purpose: Increment a specified performance metric by a given value.
+# Input: metric (str) - The name of the metric to increment (e.g., 'true_positive').
+# increment_value (int) - The value by which to increment the metric (default: 1).
+#  Output: The performance metric is updated in the database.
+#  Processing: Updates the specified metric in the database by incrementing it, ensuring it does not go below 0.
 
-    # Increments a specified performance metric by a given value
     def increment_performance_metric(self, metric, increment_value=1):
         with self.connection:
             self.connection.execute(f'''
@@ -48,14 +60,25 @@ class DatabaseClient:
                 END
                 WHERE id = 1
             ''')
+# Purpose: Safely divides two numbers and returns a default value if division by zero occurs.
+# Input: numerator (int/float) - The number to be divided.
+#        denominator (int/float) - The number by which to divide.
+#        default (optional) - A value to return if division by zero occurs (default: None).
+# Output: The result of the division (rounded to 3 decimal places) or the default value if division by zero occurs.
+#  Processing: Checks if the denominator is zero before performing the division; returns the default value if it is zero.
 
-    # Safely divides two numbers and returns a default value if division by zero occurs
+
     def safe_division(self, numerator, denominator, default=None):
         if denominator == 0:
             return default
         return round(numerator / denominator, 3)
+# Purpose: Update the performance metrics (accuracy, precision, sensitivity, specificity, f1_score, recall).
+# Input: None
+# Output: Updated performance metrics in the database.
+# Processing: Calculates the metrics based on the current values of true_positive, true_negative, false_positive, and false_negative,
+#             and then updates the performance metrics in the database.
 
-    # Updates the calculated performance metrics in the database
+
     def update_performance_metrics(self):
         metrics = self.get_performance_metrics('true_positive, true_negative, false_positive, false_negative')
         accuracy = self.safe_division(
@@ -78,8 +101,11 @@ class DatabaseClient:
                 SET accuracy = ?, precision = ?, sensitivity = ?, specificity = ?, f1_score = ?, recall = ?
                 WHERE id = 1
             ''', (accuracy, precision, sensitivity, specificity, f1_score, recall))
+# Purpose: Retrieve the performance metrics from the database.
+# Input: columns (str) - The columns to retrieve from the performance_metrics table (default: '*').
+# Output: The performance metrics retrieved from the database.
+# Processing: Retrieves the specified columns from the performance_metrics table and returns the result.
 
-    # Retrieves performance metrics from the database as a dictionary-like object
     def get_performance_metrics(self, columns='*'):
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
@@ -89,8 +115,10 @@ class DatabaseClient:
         ''')
         result = cursor.fetchone()
         return result
-
-    # Resets all performance metrics to their initial zero state
+# Purpose: Reset all performance metrics to initial zero state.
+# Input: None
+# Output: Metrics reset in the database.
+# Processing: Updates the table with default values.
     def reset_performance_metrics(self):
         """
         Purpose: Reset all performance metrics to initial zero state.
