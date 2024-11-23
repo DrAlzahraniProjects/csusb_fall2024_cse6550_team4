@@ -8,6 +8,9 @@ class DatabaseClient:
     Provides methods to initialize, update, retrieve, and reset metrics.
     """
     def __init__(self, db_path="confusion_matrix.db"):
+        """
+        Initialize the DatabaseClient with a connection to the SQLite database.
+        """
         self.connection = sqlite3.connect(db_path)
 
     # Creates the performance_metrics table and initializes it with default values
@@ -89,6 +92,12 @@ class DatabaseClient:
 
     # Resets all performance metrics to their initial zero state
     def reset_performance_metrics(self):
+        """
+        Purpose: Reset all performance metrics to initial zero state.
+        Input: None
+        Output: Metrics reset in the database.
+        Processing: Updates the table with default values.
+        """
         with self.connection:
             self.connection.execute('''
                 UPDATE performance_metrics
