@@ -12,6 +12,7 @@ from uuid import uuid4
 db_client = DatabaseClient()
 # Configure page
 st.set_page_config(page_title="Research Paper Chatbot", layout="wide")
+css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
 
 # Define answerable and unanswerable questions
 answerable_questions = {
@@ -39,9 +40,47 @@ unanswerable_questions = {
         "What is the minimum grade required to enroll for a comprehensive examination".lower(),
     }
 
+# Purpose: Reset performance metrics in the database
+# Input: None
+# Output: Resets metrics and refreshes the app state
+def reset_metrics():
+    """Reset performance metrics in the database."""
+    if st.sidebar.button("Reset"):
+        try:
+            db_client.reset_performance_metrics()
+            st.success("Metrics reset successfully.")
+            st.rerun()
+        except Exception:
+            st.sidebar.error("Error resetting performance metrics.")
+
+def create_table(result):
+    # Use Markdown to display styled HTML
+    st.sidebar.markdown(f"""
+        <div class='custom-container'>
+            <table class='table-style'>
+                <tr><th class='header-style'></th><th class='header-style'>Predicted +</th><th class='header-style'>Predicted -</th></tr>
+                <tr><td>Actual +</td><td>{result["true_positive"]} (TP)</td><td>{result["false_negative"]} (FN)</td></tr>
+                <tr><td>Actual -</td><td>{result["false_positive"]} (FP)</td><td>{result["true_negative"]} (TN)</td></tr>
+            </table>
+        </div> """, unsafe_allow_html=True)
+
+def create_sidebar(result):
+    st.sidebar.markdown(f"""
+        <div class='custom-container'>
+            <div class='keybox'>Sensitivity: {result['sensitivity']}</div>
+            <div class='keybox'>Specificity: {result['specificity']}</div>
+        </div>""", unsafe_allow_html=True)
+    create_table(result)
+    st.sidebar.markdown(f"""
+        <div class='custom-container'>
+            <div class='box box-grey'>Accuracy: {result['accuracy']}</div>
+            <div class='box box-grey'>Precision: {result['precision']}</div>
+            <div class='box box-grey'>F1 Score: {result['f1_score']}</div>
+            <div class='box box-grey'>Recall: {result['recall']}</div>
+        </div>""", unsafe_allow_html=True)
+
+
 def display_performance_metrics():
-    """Display the performance metrics in the sidebar with styled sections."""
-    # Define the URL to redirect to
     target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4?tab=readme-ov-file#SQA-for-confusion-matrix"  # Replace with the actual URL you want to link to
     st.sidebar.markdown(f"""
         <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : white">Confusion Matrix</a>
@@ -54,67 +93,10 @@ def display_performance_metrics():
         result = {'sensitivity': '-', 'specificity': '-', 'accuracy': '-', 'precision': '-', 'f1_score': '-','recall':'-', 
                   'true_positive': '-', 'false_negative': '-', 'false_positive': '-', 'true_negative': '-'}
 
-
-# Use Markdown to display styled HTML
-    st.sidebar.markdown(f"""
-        <div class='custom-container'>
-            <div class='keybox'>
-                Sensitivity: {result['sensitivity']}
-            </div>
-            <div class='keybox'>
-                Specificity: {result['specificity']}
-            </div>
-            <table class='table-style'>
-                <tr>
-                    <th class='header-style'></th>
-                    <th class='header-style'>Predicted +</th>
-                    <th class='header-style'>Predicted -</th>
-                </tr>
-                <tr>
-                    <td>Actual +</td>
-                    <td>{result["true_positive"]} (TP)</td>
-                    <td>{result["false_negative"]} (FN)</td>
-                </tr>
-                <tr>
-                    <td>Actual -</td>
-                    <td>{result["false_positive"]} (FP)</td>
-                    <td>{result["true_negative"]} (TN)</td>
-                </tr>
-            </table>
-            <div class='box box-grey'>
-                Accuracy: {result['accuracy']}
-            </div>
-            <div class='box box-grey'>
-                Precision: {result['precision']}
-            </div>
-            <div class='box box-grey'>
-                F1 Score: {result['f1_score']}
-            </div>
-            <div class='box box-grey'>
-                Recall: {result['recall']}
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Add a reset button with styling
-
-    if st.sidebar.button("Reset"):
-       try:
-        db_client.reset_performance_metrics()
-        st.success("Metrics reset successfully.")
-        st.rerun()
-       except Exception as e:
-        st.sidebar.error("Error resetting performance metrics.")
+    create_sidebar(result)
+    reset_metrics()
    
-
-
 def handle_feedback(assistant_message_id):
-    """
-    Handle feedback for a message.
-
-    Args:
-        id (str): The unique ID of the message
-    """
     previous_feedback = st.session_state.chat_history[assistant_message_id].get("feedback", None)
     feedback = st.session_state.get(f"feedback_{assistant_message_id}", None)
     user_message_id = assistant_message_id.replace("assistant_message", "user_message", 1)
@@ -165,45 +147,29 @@ def handle_feedback(assistant_message_id):
             
     db_client.update_performance_metrics()
         
-# Set page config for wide layout
 
-# Path to the styles.css file in the 'styles' folder
-css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
+
 def clean_repeated_text(text):
     if text is None:
         return ""
     sentences = text.split('. ')
     seen = set()
     cleaned_sentences = {}
-    
     for sentence in sentences:
         if sentence not in seen:
            cleaned_sentences[sentence] = sentence
-        seen.add(sentence)
-    
+        seen.add(sentence) 
     return '. '.join(cleaned_sentences)
 
 def serve_pdf():
-    """Used to open PDF file when a citation is clicked"""
     pdf_path = st.query_params.get("file")
-
     page = max(int(st.query_params.get("page", 1)), 1)
-    adjusted_page = page
-        
     if pdf_path:
         if os.path.exists(pdf_path):
             with st.spinner(f"Loading page..."):
                 col1, col2, col3 = st.columns([1, 2, 1])  # Adjust ratios as needed
                 with col2:
-                    # Place your PDF viewer here
-                    pdf_viewer(
-                        pdf_path,width=2000,  
-                        height=1000,
-                        pages_to_render=[page],
-                        scroll_to_page=page,
-                        render_text=True
-                    )
-                    
+                    pdf_viewer(pdf_path,width=2000,height=1000,pages_to_render=[page],scroll_to_page=page,render_text=True)     
         else:
             st.error(f"PDF file not found at {pdf_path}")
     else:
