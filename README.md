@@ -42,12 +42,22 @@ Run the Docker container with the following command:
 docker run -p 5004:5004 -p 6004:6004 team4-app
 ```
 
-Jupyter setup
+## Jupyter setup
 
 Run the setup script:
+On Linux/macOS use the command
+
 ```bash
 python3 team4_jupyter_setup.py
 ```
+
+On windows use the command
+```bash
+python team4_jupyter_setup.py
+```
+
+
+
 
 ### Access the Application
 
