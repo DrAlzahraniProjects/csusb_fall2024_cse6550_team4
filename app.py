@@ -106,7 +106,7 @@ def create_sidebar(result):
 def display_performance_metrics():
     target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4?tab=readme-ov-file#SQA-for-confusion-matrix"  # Replace with the actual URL you want to link to
     st.sidebar.markdown(f"""
-        <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : white">Confusion Matrix</a>
+        <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : black">Confusion Matrix</a>
         """, unsafe_allow_html=True)
     # Retrieve performance metrics from the database
     try:
