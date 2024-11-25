@@ -20,7 +20,7 @@ from typing import List, Any
 
 # Load environment variables
 load_dotenv()
-MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
+MISTRAL_API_KEY = os.getenv("API_KEY")
 
 # Configuration constants
 MILVUS_URI = "./milvus/milvus_vector.db"
