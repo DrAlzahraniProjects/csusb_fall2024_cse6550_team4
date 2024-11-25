@@ -228,33 +228,34 @@ def render_chat_history():
 def create_user_session():
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = {}
+        db_client.create_performance_metrics_table()
+        vector_store = initialize_milvus()
           # Placeholder for the dynamic loader
-        spinner_placeholder = st.empty()
-        initialization_time = 90  # Estimated initialization time in seconds
-        with st.spinner("Initializing, Please Wait..."):
-            for remaining_time in range(initialization_time, 0, -1):
+        #spinner_placeholder = st.empty()
+       # initialization_time = 90  # Estimated initialization time in seconds
+       # with st.spinner("Initializing, Please Wait..."):
+        #    for remaining_time in range(initialization_time, 0, -1):
                     # Calculate minutes and seconds
-                    minutes, seconds = divmod(remaining_time, 60)
+            #        minutes, seconds = divmod(remaining_time, 60)
 
                     # Update the timer in the UI
-                    spinner_placeholder.markdown(
-                        f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
-                        unsafe_allow_html=True
-                    )
+                  #  spinner_placeholder.markdown(
+                     #   f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
+                     #   unsafe_allow_html=True
+                   # )
 
                       # Run Milvus initialization in the first second
-                    if remaining_time == initialization_time:
-                          db_client.create_performance_metrics_table()
-                          vector_store = initialize_milvus()
+                  #  if remaining_time == initialization_time:
+            
 
                     # Exit the loop if initialization completes early
-                    if st.session_state.get('milvus_initialized', False):
-                        break
+                   # if st.session_state.get('milvus_initialized', False):
+                    #    break
 
-                    time.sleep(0.2)  # Wait for 1 second
+                   # time.sleep(0.2)  # Wait for 1 second
 
             # Clear the spinner and show success or error message
-            spinner_placeholder.empty()
+          #  spinner_placeholder.empty()
 #Purpose: Displays chat history with feedback options; 
 # Input: None; 
 # Output: Rendered user and bot messages; 
@@ -320,8 +321,9 @@ def main():
             st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
         st.title("Research Paper Chatbot")
         create_user_session()
-        create_chat_history()  
         display_performance_metrics()
+        create_chat_history()  
+        
         if user_input:= st.chat_input("Message writing assistant"):
             if user_input.strip():
                 process_user_input(user_input)
