@@ -85,19 +85,40 @@ def create_table(result):
 # Output: Styled sidebar displaying metrics; 
 # Processing: Formats and displays sensitivity, specificity, accuracy, precision, F1 score, and recall using Markdown and calls create_table for confusion matrix visualization.
 def create_sidebar(result):
+    # Adjusted styles to make the key metric boxes wider
     st.sidebar.markdown(f"""
         <div class='custom-container'>
-            <div class='keybox'>Sensitivity: {result['sensitivity']}</div>
-            <div class='keybox'>Specificity: {result['specificity']}</div>
-        </div>""", unsafe_allow_html=True)
+            <div class='keybox' style="padding: 10px; margin-bottom: 10px; background-color: #E0F7FA; border-radius: 5px; font-size: 16px; width: 100%; text-align: left;">
+                Sensitivity (true positive rate): {result['sensitivity']}
+            </div>
+            <div class='keybox' style="padding: 10px; margin-bottom: 20px; background-color: #E0F7FA; border-radius: 5px; font-size: 16px; width: 100%; text-align: left;">
+                Specificity (true negative rate): {result['specificity']}
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Confusion Matrix Section
+    st.sidebar.markdown("<div class='confusion-matrix-title' style='font-size:18px; margin-top:20px;'>Confusion Matrix</div>", unsafe_allow_html=True)
     create_table(result)
+    
+    # Other Metrics Section
+    st.sidebar.markdown("<div class='other-metrics-title' style='font-size:18px; margin-top:20px;'>Other Metrics</div>", unsafe_allow_html=True)
     st.sidebar.markdown(f"""
         <div class='custom-container'>
-            <div class='box box-grey'>Accuracy: {result['accuracy']}</div>
-            <div class='box box-grey'>Precision: {result['precision']}</div>
-            <div class='box box-grey'>F1 Score: {result['f1_score']}</div>
-            <div class='box box-grey'>Recall: {result['recall']}</div>
-        </div>""", unsafe_allow_html=True)
+            <div class='box box-grey' style="padding: 10px; margin-bottom: 10px; background-color: #E8EAF6; border-radius: 5px; font-size: 16px; width: 100%; text-align: left;">
+                Accuracy: {result['accuracy']}
+            </div>
+            <div class='box box-grey' style="padding: 10px; margin-bottom: 10px; background-color: #E8EAF6; border-radius: 5px; font-size: 16px; width: 100%; text-align: left;">
+                Precision: {result['precision']}
+            </div>
+            <div class='box box-grey' style="padding: 10px; margin-bottom: 10px; background-color: #E8EAF6; border-radius: 5px; font-size: 16px; width: 100%; text-align: left;">
+                Recall: {result['recall']}
+            </div>
+            <div class='box box-grey' style="padding: 10px; margin-bottom: 10px; background-color: #E8EAF6; border-radius: 5px; font-size: 16px; width: 100%; text-align: left;">
+                F1 Score: {result['f1_score']}
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
 # Purpose: Display performance metrics and reset button in the sidebar
 # Input: None
@@ -106,19 +127,18 @@ def create_sidebar(result):
 def display_performance_metrics():
     target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4?tab=readme-ov-file#SQA-for-confusion-matrix"  # Replace with the actual URL you want to link to
     st.sidebar.markdown(f"""
-        <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : white">Confusion Matrix</a>
+        <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : white">Evaluation Report</a>
         """, unsafe_allow_html=True)
     # Retrieve performance metrics from the database
     try:
         result = db_client.get_performance_metrics()
     except Exception:
         st.sidebar.error("Error retrieving performance metrics.")
-        result = {'sensitivity': '-', 'specificity': '-', 'accuracy': '-', 'precision': '-', 'f1_score': '-','recall':'-', 
-                  'true_positive': '-', 'false_negative': '-', 'false_positive': '-', 'true_negative': '-'}
+        result = {'sensitivity': 'N/A', 'specificity': 'N/A', 'accuracy': 'N/A', 'precision': 'N/A', 'f1_score': 'N/A', 'recall': 'N/A',
+                  'true_positive': '0', 'false_negative': '0', 'false_positive': '0', 'true_negative': '0'}
 
     create_sidebar(result)
-    reset_metrics()
-
+    st.sidebar.button("Reset", on_click=reset_metrics)
 #Purpose: Updates metrics for "like" feedback; 
 # Input: previous_feedback, metric_type; 
 # Output: Adjusts database metrics; 
@@ -301,11 +321,11 @@ def main():
     else:
         with open(css_file_path) as f:
             st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-        st.title("Research Paper Chatbot")
+        st.title("Textbook Chatbot")
         create_user_session()
-        create_chat_history()  
+        create_chat_history()
         display_performance_metrics()
-        if user_input:= st.chat_input("Message writing assistant"):
+        if user_input := st.chat_input("Ask your question?"):
             if user_input.strip():
                 process_user_input(user_input)
             else:
