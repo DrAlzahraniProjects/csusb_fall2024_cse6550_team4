@@ -4,6 +4,7 @@ import numpy as np
 from statistics_chatbot import (
    DatabaseClient
 )
+import time
 from bot import query_rag, initialize_milvus
 from streamlit_pdf_viewer import pdf_viewer
 from uuid import uuid4
@@ -106,7 +107,7 @@ def create_sidebar(result):
 def display_performance_metrics():
     target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4?tab=readme-ov-file#SQA-for-confusion-matrix"  # Replace with the actual URL you want to link to
     st.sidebar.markdown(f"""
-        <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : white">Confusion Matrix</a>
+        <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : black">Confusion Matrix</a>
         """, unsafe_allow_html=True)
     # Retrieve performance metrics from the database
     try:
@@ -119,68 +120,60 @@ def display_performance_metrics():
     create_sidebar(result)
     reset_metrics()
 
-#Purpose: Updates metrics for "like" feedback; 
-# Input: previous_feedback, metric_type; 
-# Output: Adjusts database metrics; 
-# Processing: Increments true_<metric_type> or corrects from "dislike."
-def handle_like_feedback(previous_feedback, metric_type):
-    """Handles the case where feedback is 'like'."""
-    if previous_feedback is None:
-        db_client.increment_performance_metric(f"true_{metric_type}")
-    elif previous_feedback == "dislike":
-        db_client.increment_performance_metric(f"false_{metric_type}", -1)
-        db_client.increment_performance_metric(f"true_{metric_type}")
-
-#Purpose: Updates metrics for "dislike" feedback; 
-# Input: previous_feedback, metric_type; 
-# Output: Adjusts database metrics; 
-# Processing: Increments false_<metric_type> or corrects from "like."
-def handle_dislike_feedback(previous_feedback, metric_type):
-    """Handles the case where feedback is 'dislike'."""
-    if previous_feedback is None:
-        db_client.increment_performance_metric(f"false_{metric_type}")
-    elif previous_feedback == "like":
-        db_client.increment_performance_metric(f"true_{metric_type}", -1)
-        db_client.increment_performance_metric(f"false_{metric_type}")
-#Purpose: Updates metrics for "neutral" feedback; 
-# Input: previous_feedback, metric_type; 
-# Output: Adjusts database metrics; 
-# Processing: Decrements true_ or false_<metric_type> based on prior feedback.
-def handle_neutral_feedback(previous_feedback, metric_type):
-    """Handles the case where feedback is 'neutral'."""
-    if previous_feedback == "like":
-        db_client.increment_performance_metric(f"true_{metric_type}", -1)
-    elif previous_feedback == "dislike":
-        db_client.increment_performance_metric(f"false_{metric_type}", -1)
-
-# Purpose: Update performance metrics based on user feedback
-# Input: Question type, feedback, previous feedback, and metric type
-# Output: Metrics updated in the database
-# Processing: Increment/decrement metrics based on the feedback type
-def update_feedback_metric(question, feedback, previous_feedback, metric_type):
-    """Updates performance metrics based on user feedback."""
-    if feedback == 1:  # Like
-        handle_like_feedback(previous_feedback, metric_type)
-    elif feedback == 0:  # Dislike
-        handle_dislike_feedback(previous_feedback, metric_type)
-    else:  # Neutral
-        handle_neutral_feedback(previous_feedback, metric_type)
-
-
 # Purpose: Handle user feedback and update metrics accordingly
 # Input: Assistant message ID
 # Output: Updates metrics and chat history
 # Processing: Determines the question type and applies the corresponding metric update
 def handle_feedback(assistant_message_id):
-    question = st.session_state.chat_history[assistant_message_id.replace("assistant_message", "user_message", 1)]["content"]
-    feedback = st.session_state.get(f"feedback_{assistant_message_id}", None)
     previous_feedback = st.session_state.chat_history[assistant_message_id].get("feedback", None)
+    feedback = st.session_state.get(f"feedback_{assistant_message_id}", None)
+    user_message_id = assistant_message_id.replace("assistant_message", "user_message", 1)
+    question = st.session_state.chat_history[user_message_id]["content"]
+
     if question.lower().strip() in answerable_questions:
-        update_feedback_metric(question, feedback, previous_feedback, "positive")
+        if feedback == 1:
+            if previous_feedback == None:
+                db_client.increment_performance_metric("true_positive")
+            elif previous_feedback == "dislike":
+                db_client.increment_performance_metric("false_negative", -1)
+                db_client.increment_performance_metric("true_positive")
+            st.session_state.chat_history[assistant_message_id]["feedback"] = "like"
+        elif feedback == 0:
+            if previous_feedback == None:
+                db_client.increment_performance_metric("false_negative")
+            elif previous_feedback == "like":
+                db_client.increment_performance_metric("true_positive", -1)
+                db_client.increment_performance_metric("false_negative")
+            st.session_state.chat_history[assistant_message_id]["feedback"] = "dislike"
+        else:
+            if previous_feedback == "like":
+                db_client.increment_performance_metric("true_positive", -1)
+            elif previous_feedback == "dislike":
+                db_client.increment_performance_metric("false_negative", -1)
+            st.session_state.chat_history[assistant_message_id]["feedback"] = None
     elif question.lower().strip() in unanswerable_questions:
-        update_feedback_metric(question, feedback, previous_feedback, "negative")
+        if feedback == 1:
+            if previous_feedback == None:
+                db_client.increment_performance_metric("true_negative")
+            elif previous_feedback == "dislike":
+                db_client.increment_performance_metric("false_positive", -1)
+                db_client.increment_performance_metric("true_negative")
+            st.session_state.chat_history[assistant_message_id]["feedback"] = "like"
+        elif feedback == 0:
+            if previous_feedback == None:
+                db_client.increment_performance_metric("false_positive")
+            elif previous_feedback == "like":
+                db_client.increment_performance_metric("true_negative", -1)
+                db_client.increment_performance_metric("false_positive")
+            st.session_state.chat_history[assistant_message_id]["feedback"] = "dislike"
+        else:
+            if previous_feedback == "like":
+                db_client.increment_performance_metric("true_negative", -1)
+            elif previous_feedback == "dislike":
+                db_client.increment_performance_metric("false_positive", -1)
+            st.session_state.chat_history[assistant_message_id]["feedback"] = None
+            
     db_client.update_performance_metrics()
-    st.session_state.chat_history[assistant_message_id]["feedback"] = "like" if feedback == 1 else "dislike" if feedback == 0 else None
 
 #Purpose: Removes duplicate sentences from the input text; 
 # Input: A string text or None; 
@@ -235,9 +228,34 @@ def render_chat_history():
 def create_user_session():
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = {}
-        with st.spinner("Initializing, Please Wait..."):
-            db_client.create_performance_metrics_table()
-            vector_store = initialize_milvus()
+        db_client.create_performance_metrics_table()
+        vector_store = initialize_milvus()
+          # Placeholder for the dynamic loader
+        #spinner_placeholder = st.empty()
+       # initialization_time = 90  # Estimated initialization time in seconds
+       # with st.spinner("Initializing, Please Wait..."):
+        #    for remaining_time in range(initialization_time, 0, -1):
+                    # Calculate minutes and seconds
+            #        minutes, seconds = divmod(remaining_time, 60)
+
+                    # Update the timer in the UI
+                  #  spinner_placeholder.markdown(
+                     #   f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
+                     #   unsafe_allow_html=True
+                   # )
+
+                      # Run Milvus initialization in the first second
+                  #  if remaining_time == initialization_time:
+            
+
+                    # Exit the loop if initialization completes early
+                   # if st.session_state.get('milvus_initialized', False):
+                    #    break
+
+                   # time.sleep(0.2)  # Wait for 1 second
+
+            # Clear the spinner and show success or error message
+          #  spinner_placeholder.empty()
 #Purpose: Displays chat history with feedback options; 
 # Input: None; 
 # Output: Rendered user and bot messages; 
@@ -303,8 +321,9 @@ def main():
             st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
         st.title("Research Paper Chatbot")
         create_user_session()
-        create_chat_history()  
         display_performance_metrics()
+        create_chat_history()  
+        
         if user_input:= st.chat_input("Message writing assistant"):
             if user_input.strip():
                 process_user_input(user_input)
