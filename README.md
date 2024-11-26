@@ -38,7 +38,7 @@ git pull origin main
 Build the Docker image using the following command:
 
 ```bash
-docker build --build-arg API_KEY=your_api_key_here -t team4-app .
+docker build -t team4-app .
 
 ```
 
@@ -47,7 +47,7 @@ docker build --build-arg API_KEY=your_api_key_here -t team4-app .
 Run the Docker container with the following command:
 
 ```bash
-docker run -d -p 5004:5004 -p 6004:6004 team4-app
+docker run -d -p 5004:5004 -p 6004:6004 -e API_KEY=<api_key_here> team4-app
 ```
 
 ### Access the Application
