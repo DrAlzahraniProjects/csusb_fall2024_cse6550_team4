@@ -31,7 +31,7 @@ git pull origin main
 Build the Docker image using the following command:
 
 ```bash
-docker build -t team4-app .
+docker build --build-arg API_KEY=your_api_key_here -t team4-app .
 ```
 
 ### Step 5: Run the Docker Container
