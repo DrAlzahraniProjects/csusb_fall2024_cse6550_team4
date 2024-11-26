@@ -58,13 +58,15 @@ unanswerable_questions = {
 # Processing: Calls database client's reset method and refreshes the page
 def reset_metrics():
     """Reset performance metrics in the database."""
-    if st.sidebar.button("Reset"):
+    if st.sidebar.button("Reset", key="unique_reset_button_12345"):
         try:
             db_client.reset_performance_metrics()
             st.success("Metrics reset successfully.")
             st.rerun()
         except Exception:
             st.sidebar.error("Error resetting performance metrics.")
+
+
 
 
 # Purpose: Render the performance metrics in a styled format
@@ -86,39 +88,82 @@ def create_table(result):
 # Output: Styled sidebar displaying metrics; 
 # Processing: Formats and displays sensitivity, specificity, accuracy, precision, F1 score, and recall using Markdown and calls create_table for confusion matrix visualization.
 def create_sidebar(result):
+    # Render Evaluation Report title
     st.sidebar.markdown(f"""
-        <div class='custom-container'>
-            <div class='keybox'>Sensitivity: {result['sensitivity']}</div>
-            <div class='keybox'>Specificity: {result['specificity']}</div>
-        </div>""", unsafe_allow_html=True)
-    create_table(result)
+        <div style="background-color: #A7F3D0; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; color: #004d40;">
+            Evaluation Report
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Render Sensitivity and Specificity boxes with improved contrast
     st.sidebar.markdown(f"""
-        <div class='custom-container'>
-            <div class='box box-grey'>Accuracy: {result['accuracy']}</div>
-            <div class='box box-grey'>Precision: {result['precision']}</div>
-            <div class='box box-grey'>F1 Score: {result['f1_score']}</div>
-            <div class='box box-grey'>Recall: {result['recall']}</div>
-        </div>""", unsafe_allow_html=True)
+        <div style="background-color: #B3E5FC; padding: 15px; margin-top: 15px; border-radius: 8px; font-size: 16px; color: #01579B; font-weight: bold;">
+            Sensitivity (true positive rate): {result['sensitivity']}
+        </div>
+        <div style="background-color: #B3E5FC; padding: 15px; margin-top: 10px; border-radius: 8px; font-size: 16px; color: #01579B; font-weight: bold;">
+            Specificity (true negative rate): {result['specificity']}
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Render Confusion Matrix title
+    st.sidebar.markdown("<div style='font-size: 18px; margin-top: 20px; font-weight: bold; color: #004d40;'>Confusion Matrix</div>", unsafe_allow_html=True)
+    create_table(result)  # Render the table using the existing function
+
+    # Render Other Metrics section with better styling
+    st.sidebar.markdown("<div style='font-size: 18px; margin-top: 20px; font-weight: bold; color: #004d40;'>Other Metrics</div>", unsafe_allow_html=True)
+    st.sidebar.markdown(f"""
+        <div style="background-color: #F3E5F5; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 16px; color: #6A1B9A; font-weight: bold;">
+            Accuracy: {result['accuracy']}
+        </div>
+        <div style="background-color: #F3E5F5; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 16px; color: #6A1B9A; font-weight: bold;">
+            Precision: {result['precision']}
+        </div>
+        <div style="background-color: #F3E5F5; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 16px; color: #6A1B9A; font-weight: bold;">
+            Recall: {result['recall']}
+        </div>
+        <div style="background-color: #F3E5F5; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 16px; color: #6A1B9A; font-weight: bold;">
+            F1 Score: {result['f1_score']}
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Add Reset Button
+    if st.sidebar.button("Reset", key="reset_button"):
+        try:
+            reset_metrics()
+        except Exception as e:
+            st.sidebar.error("Error resetting metrics.")
+
 
 # Purpose: Display performance metrics and reset button in the sidebar
 # Input: None
 # Output: Performance metrics with a reset button
 # Processing: Fetch, render, and provide reset functionality for metrics
 def display_performance_metrics():
-    target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4?tab=readme-ov-file#SQA-for-confusion-matrix"  # Replace with the actual URL you want to link to
-    st.sidebar.markdown(f"""
-        <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : black">Confusion Matrix</a>
-        """, unsafe_allow_html=True)
-    # Retrieve performance metrics from the database
+    """Fetch and display performance metrics in the sidebar."""
     try:
+        # Fetch performance metrics from the database
         result = db_client.get_performance_metrics()
-    except Exception:
+    except Exception as e:
         st.sidebar.error("Error retrieving performance metrics.")
-        result = {'sensitivity': '-', 'specificity': '-', 'accuracy': '-', 'precision': '-', 'f1_score': '-','recall':'-', 
-                  'true_positive': '-', 'false_negative': '-', 'false_positive': '-', 'true_negative': '-'}
+        result = {
+            'sensitivity': 'N/A',
+            'specificity': 'N/A',
+            'accuracy': 'N/A',
+            'precision': 'N/A',
+            'recall': 'N/A',
+            'f1_score': 'N/A',
+            'true_positive': 0,
+            'false_negative': 0,
+            'false_positive': 0,
+            'true_negative': 0
+        }
 
+    # Render metrics
     create_sidebar(result)
+
+    # Ensure the Reset button is displayed only once
     reset_metrics()
+
 
 # Purpose: Handle user feedback and update metrics accordingly
 # Input: Assistant message ID
