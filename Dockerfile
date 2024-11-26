@@ -3,11 +3,11 @@ FROM continuumio/miniconda3
 
 # Set the working directory
 WORKDIR /app
-ARG API_KEY
+# ARG API_KEY
 # Install wget and required system dependencies
 RUN apt-get update && apt-get install -y wget && apt-get clean
 RUN pip install --no-cache-dir streamlit matplotlib
-ENV API_KEY=${API_KEY}
+# ENV API_KEY=${API_KEY}
 # Update conda to ensure the latest version
 RUN conda update -n base conda -y
 
