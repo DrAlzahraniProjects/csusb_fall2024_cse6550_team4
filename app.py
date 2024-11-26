@@ -76,6 +76,7 @@ def reset_metrics():
 def create_table(result):
     # Use Markdown to display styled HTML
     st.sidebar.markdown(f"""
+                        Confusion Matrix
         <div class='custom-container'>
             <table class='table-style'>
                 <tr><th class='header-style'></th><th class='header-style'>Predicted +</th><th class='header-style'>Predicted -</th></tr>
@@ -88,50 +89,34 @@ def create_table(result):
 # Output: Styled sidebar displaying metrics; 
 # Processing: Formats and displays sensitivity, specificity, accuracy, precision, F1 score, and recall using Markdown and calls create_table for confusion matrix visualization.
 def create_sidebar(result):
-    # Render Evaluation Report title
+    target_url = "https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4?tab=readme-ov-file#SQA-for-confusion-matrix"  # Replace with the actual URL you want to link to
     st.sidebar.markdown(f"""
-        <div style="background-color: #A7F3D0; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; color: #004d40;">
-            Evaluation Report
-        </div>
-    """, unsafe_allow_html=True)
+        <a href="{target_url}" target="_blank" class='cn_mtrx' style="color : black">Evaluation report</a>
+        """, unsafe_allow_html=True)
 
     # Render Sensitivity and Specificity boxes with improved contrast
     st.sidebar.markdown(f"""
-        <div style="background-color: #B3E5FC; padding: 15px; margin-top: 15px; border-radius: 8px; font-size: 16px; color: #01579B; font-weight: bold;">
-            Sensitivity (true positive rate): {result['sensitivity']}
-        </div>
-        <div style="background-color: #B3E5FC; padding: 15px; margin-top: 10px; border-radius: 8px; font-size: 16px; color: #01579B; font-weight: bold;">
-            Specificity (true negative rate): {result['specificity']}
-        </div>
-    """, unsafe_allow_html=True)
+        <div class='custom-container'>
+            <div class='keybox'>Sensitivity: {result['sensitivity']}</div>
+            <div class='keybox'>Specificity: {result['specificity']}</div>
+        </div>""", unsafe_allow_html=True)
 
     # Render Confusion Matrix title
-    st.sidebar.markdown("<div style='font-size: 18px; margin-top: 20px; font-weight: bold; color: #004d40;'>Confusion Matrix</div>", unsafe_allow_html=True)
+    # st.sidebar.markdown("<div style='background-color: #A7F3D0; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; color: #004d40;'>Confusion Matrix</div>", unsafe_allow_html=True)
     create_table(result)  # Render the table using the existing function
 
     # Render Other Metrics section with better styling
-    st.sidebar.markdown("<div style='font-size: 18px; margin-top: 20px; font-weight: bold; color: #004d40;'>Other Metrics</div>", unsafe_allow_html=True)
+    # st.sidebar.markdown("<div style='background-color: #A7F3D0; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; color: #004d40;'>Other Metrics</div>", unsafe_allow_html=True)
     st.sidebar.markdown(f"""
-        <div style="background-color: #F3E5F5; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 16px; color: #6A1B9A; font-weight: bold;">
-            Accuracy: {result['accuracy']}
-        </div>
-        <div style="background-color: #F3E5F5; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 16px; color: #6A1B9A; font-weight: bold;">
-            Precision: {result['precision']}
-        </div>
-        <div style="background-color: #F3E5F5; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 16px; color: #6A1B9A; font-weight: bold;">
-            Recall: {result['recall']}
-        </div>
-        <div style="background-color: #F3E5F5; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 16px; color: #6A1B9A; font-weight: bold;">
-            F1 Score: {result['f1_score']}
-        </div>
-    """, unsafe_allow_html=True)
+                        Other Metrics
+        <div class='custom-container'>
+            <div class='box box-grey'>Accuracy: {result['accuracy']}</div>
+            <div class='box box-grey'>Precision: {result['precision']}</div>
+            <div class='box box-grey'>F1 Score: {result['f1_score']}</div>
+            <div class='box box-grey'>Recall: {result['recall']}</div>
+        </div>""", unsafe_allow_html=True)
 
-    # Add Reset Button
-    if st.sidebar.button("Reset", key="reset_button"):
-        try:
-            reset_metrics()
-        except Exception as e:
-            st.sidebar.error("Error resetting metrics.")
+
 
 
 # Purpose: Display performance metrics and reset button in the sidebar
@@ -273,34 +258,28 @@ def render_chat_history():
 def create_user_session():
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = {}
-        db_client.create_performance_metrics_table()
-        vector_store = initialize_milvus()
-          # Placeholder for the dynamic loader
-        #spinner_placeholder = st.empty()
-       # initialization_time = 90  # Estimated initialization time in seconds
-       # with st.spinner("Initializing, Please Wait..."):
-        #    for remaining_time in range(initialization_time, 0, -1):
+        spinner_placeholder = st.empty()
+        initialization_time = 120
+        with st.spinner("Initializing, Please Wait..."):
+            for remaining_time in range(initialization_time, 0, -1):
                     # Calculate minutes and seconds
-            #        minutes, seconds = divmod(remaining_time, 60)
-
+                    minutes, seconds = divmod(remaining_time, 60)
                     # Update the timer in the UI
-                  #  spinner_placeholder.markdown(
-                     #   f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
-                     #   unsafe_allow_html=True
-                   # )
-
+                    spinner_placeholder.markdown(
+                        f"<h4 style='text-align: center;'>Please wait for {minutes} minute(s) {seconds} second(s)</h4>",
+                        unsafe_allow_html=True
+                    )
                       # Run Milvus initialization in the first second
-                  #  if remaining_time == initialization_time:
-            
-
+                    if remaining_time == initialization_time:
+                          db_client.create_performance_metrics_table()
+                          vector_store = initialize_milvus()
                     # Exit the loop if initialization completes early
-                   # if st.session_state.get('milvus_initialized', False):
-                    #    break
-
-                   # time.sleep(0.2)  # Wait for 1 second
-
+                    if st.session_state.get('milvus_initialized', False):
+                        break
+                    time.sleep(0.2)  # Wait for 1 second
             # Clear the spinner and show success or error message
-          #  spinner_placeholder.empty()
+            spinner_placeholder.empty()
+
 #Purpose: Displays chat history with feedback options; 
 # Input: None; 
 # Output: Rendered user and bot messages; 
@@ -366,8 +345,9 @@ def main():
             st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
         st.title("Research Paper Chatbot")
         create_user_session()
+        create_chat_history() 
         display_performance_metrics()
-        create_chat_history()  
+         
         
         if user_input:= st.chat_input("Message writing assistant"):
             if user_input.strip():

@@ -13,6 +13,13 @@
     clear: both;
 }
 
+p{
+    margin : 0px;
+}
+
+a{
+    text-decoration: none;
+}
 
 
 /* Bot message styles */
@@ -118,13 +125,15 @@
     padding: 10px 20px;
     font-size: 16px;
     color: black;
-    background-color: #9bf08f;
+    background-color: #adedff;
     border: none;
     border-radius: 4px;
     text-align: center;
     text-decoration: none;
     width: 100%;
 }
+
+
 
 .reset-button {
     background-color: #f44336; /* Red background */
