@@ -2,6 +2,13 @@
 **Course**: CSE 6550: Software Engineering Concepts, Fall 2024  
 **Institution**: California State University, San Bernardino
 
+# Prerequisites
+Before you start, verify that the following are installed on your system:
+
+- Docker
+- Git
+- Python (Version-3.10 or above)
+
 ## Setup Instructions
 
 Follow these steps to set up and run the Research Paper Chatbot application.
