@@ -45,9 +45,10 @@ docker build -t team4-app .
 ### Step 5: Run the Docker Container
 
 Run the Docker container with the following command:
+Take the API key from Team4 discussion board
 
 ```bash
-docker run -p 5004:5004 -p 6004:6004 -e API_KEY=api_key_here team4-app
+docker run -d -p 5004:5004 -p 6004:6004 -e API_KEY=<api_key_here> team4-app
 ```
 
 ### Access the Application

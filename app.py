@@ -259,7 +259,7 @@ def create_user_session():
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = {}
         spinner_placeholder = st.empty()
-        initialization_time = 120
+        initialization_time = 170  # Set the initialization time in seconds
         with st.spinner("Initializing, Please Wait..."):
             for remaining_time in range(initialization_time, 0, -1):
                     # Calculate minutes and seconds
