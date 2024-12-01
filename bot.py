@@ -182,7 +182,12 @@ def query_rag(query):
         # Collect unique links
         unique_links = set()
         if not relevant_docs:
-            return "Sorry, I don't have related context for provided context , I can provide information related to research papers let me know if you have any query related to research papers."
+            return '''Sorry, I don't have related context for provided context , I can provide information related to research papers let me know if you have any query related to research papers.
+                    For further reference, you can visit
+                    <a href="https://dl.acm.org/doi/10.1145/3597503" target="_blank" style="color : black">  
+                    [research papers]</a>.'''
+                   
+    
         for doc in relevant_docs:
             metadata = doc.metadata if hasattr(doc, "metadata") else {}
             source = metadata.get("source", "Unknown").split("/")[-1]
