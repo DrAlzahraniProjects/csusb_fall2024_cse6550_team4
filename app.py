@@ -5,7 +5,7 @@ from statistics_chatbot import (
    DatabaseClient
 )
 import time
-from bot import query_rag, initialize_milvus
+from bot import query_rag, initialize_milvus, query_handler
 from streamlit_pdf_viewer import pdf_viewer
 from uuid import uuid4
 
@@ -315,7 +315,7 @@ def handle_user_input(user_input):
 def generate_bot_response(user_input, unique_id):
     bot_message_id = f"bot_message_{unique_id}"
     with st.spinner("Response Generating, please wait..."):
-        rag_output = query_rag(user_input)
+        rag_output = query_handler(user_input)
         bot_response = rag_output[0] if isinstance(rag_output, tuple) else str(rag_output)
         cleaned_response = clean_repeated_text(bot_response)
         if cleaned_response:
