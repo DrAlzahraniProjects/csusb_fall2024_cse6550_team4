@@ -182,10 +182,8 @@ def query_rag(query):
         # Collect unique links
         unique_links = set()
         if not relevant_docs:
-            return '''Sorry, I don't have related context for provided context , I can provide information related to research papers let me know if you have any query related to research papers.
-                    For further reference, you can visit
-                    <a href="https://dl.acm.org/doi/10.1145/3597503" target="_blank" style="color : black">  
-                    [research papers]</a>.'''
+            return '''I regret to inform you that I could not find relevant context for your query. However, I am equipped to provide information related to <a href="https://dl.acm.org/doi/10.1145/3597503">  
+                    research papers</a>. Please do not hesitate to reach out with any inquiries regarding them.'''
                    
     
         for doc in relevant_docs:
@@ -357,6 +355,33 @@ def get_answer_with_source(response):
     formatted_response = f"{answer}\n\nSources: {sources_info}" if sources else answer
 
     return formatted_response
+# Hardcoded responses mapping
+HARDCODED_RESPONSES = {
+    "what papers do you have?": "Currently, i can help you with papers related to software engineering. I have 14 papers in total.",
+    "which conferences are these papers from?": "The papers are from 2024 IEEE/ACM 46th International Conference on Software Engineering (ICSE '24)",
+}
+
+def query_handler(query):
+    """
+    Handles user queries by checking for hardcoded responses first
+    and falling back to the RAG model if no match is found.
+
+    Args:
+        query (str): User's query string.
+
+    Returns:
+        str: Response text for the query.
+    """
+    # Normalize the query for comparison
+    normalized_query = query.lower().strip()
+
+    # Check for hardcoded responses
+    if normalized_query in HARDCODED_RESPONSES:
+        return HARDCODED_RESPONSES[normalized_query]
+
+    # If no hardcoded response is found, proceed with the RAG model
+    return query_rag(query)
+
 
 
 if __name__ == '__main__':
