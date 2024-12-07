@@ -75,16 +75,16 @@ jupyter notebook --port=6004
 
 | **Answerable questions**                   |  **Unaswerable questions**                                                    |
 |-------------------------------------       |-------------------------------------------------------------------------------|
-| What is KnowLog?                           | Who teaches independent study class?                                                            |
-| How chatGPT works?                       | what is RMMM plan?                                           | 
-| What is convo-genAI?                | Who is the chair of the department?                                           |
-| What is the effectiveness of codex in few shot learning?               | What is 6550 course about in csusb?                                     |
-| What are convolutional networks?      | who is Dean of computer science in CSUSB?                                          |
-| How large language models work?                | What class does Dr. Alzahrani teach?                                                              |
-| What is P-EPR?                         | Who is Pressman?                                          |
-| What is generative artificial intelligence?  | Who is ITS department head in CSUSB?                      |
-| What is the problem and solution of research paper related to convogen-AI?             | Can i get class schdeule of CS department for Fall 2024? |
-| How vulnerabilities are detected?   | What is the minimum grade required to enroll for a comprehensive examination |
+|What is GUI?                           | Who teaches independent study class?                                                            |
+| What metrics evaluate EGFE?                       | what is RMMM plan?                                           | 
+| What are Android malware obfuscation techniques?               | Who is the chair of the department?                                           |
+| What is UniLog framework's purpose?               | What is 6550 course about in csusb?                                     |
+| What triggers GitHub workflows?      | who is Dean of computer science in CSUSB?                                          |
+| What challenges do precision tuners face?                | What class does Dr. Alzahrani teach?                                                              |
+| How does LLMAO detect buggy lines?                         | Who is Pressman?                                          |
+| What is the purpose of dataflow analysis?                      |
+| What is the analogy between graph learning and dataflow analysis?             | Can i get class schdeule of CS department for Fall 2024? |
+| How does LANCE address logging?   | What is the minimum grade required to enroll for a comprehensive examination |
 
 
 ### Additional Information

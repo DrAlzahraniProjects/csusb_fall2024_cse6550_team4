@@ -28,16 +28,16 @@ css_file_path = os.path.join(os.path.dirname(__file__), 'styles', 'styles.css')
 # Output: Sets of predefined questions categorized by answerability
 # Processing: Define two sets of questions: one for answerable and one for unanswerable questions
 answerable_questions = {
-        "What is KnowLog?".lower(),
-        "How chatGPT works?".lower(),
-        "What is convo-genAI?".lower(),
-        "What is the effectiveness of codex in few shot learning?".lower(),
-        "What are convolutional networks?".lower(),
-        "How large language models work?".lower(),
-        "What is P-EPR?".lower(),
-        "What is generative artificial intelligence?".lower(),
-        "What is the problem and solution of research paper related to convogen-AI?".lower(),
-        "How vulnerabilities are detected?".lower()
+        "What is GUI?".lower(),
+        "What metrics evaluate EGFE?".lower(),
+        "What are Android malware obfuscation techniques?".lower(),
+        "What is UniLog framework's purpose?".lower(),
+        "What triggers GitHub workflows?".lower(),
+        "What challenges do precision tuners face?".lower(),
+        "How does LLMAO detect buggy lines?".lower(),
+        "What is the purpose of dataflow analysis?".lower(),
+        "What is the analogy between graph learning and dataflow analysis?".lower(),
+        "How does LANCE address logging?".lower()
     }
 unanswerable_questions = {
         "Who teaches independent study class?".lower(),
