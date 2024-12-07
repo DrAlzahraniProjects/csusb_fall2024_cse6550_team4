@@ -13,6 +13,42 @@ Before you start, verify that the following are installed on your system:
 
 Follow these steps to set up and run the Research Paper Chatbot application.
 
+## Automated App Setup ##
+
+The `setup.py` script automates the setup process, including downloading the repository, building the Docker container, and running the application.
+
+### Steps:
+
+1. **Clone the Repository**:
+  ```bash
+    git clone https://github.com/DrAlzahraniProjects/csusb_fall2024_cse6550_team4.git
+```
+2. **Navigate to the Project Directory**:
+   ```bash
+   cd csusb_fall2024_cse6550_team4
+   ```
+3. **Update Local Repository**:
+  ```bash
+   git pull origin main
+   ```
+4. **Run the Setup Script**:  
+   ```bash
+   python setup.py
+   ```
+   **Note:** If the above command does not work (e.g., on Linux), try using:
+   ```bash
+   python3 setup.py
+   ```
+
+4. **Follow On-Screen Prompts**:
+   - The script will ask for the Mistral API key (provided in the team discussion on Canvas).
+   - It will stop any existing containers, pull updates, build the Docker image, and run the container.
+
+5. **Access the Application**:
+   - Website: [http://localhost:5004/team4](http://localhost:5004/team4)
+
+## Manual Docker Setup (Alternative)
+
 ### Step 1: Clone the Repository
 
 Clone the GitHub repository to your local machine using the following command:

@@ -3,6 +3,10 @@ FROM continuumio/miniconda3
 
 # Set the working directory
 WORKDIR /app
+
+# Import ARG and save to .ENV file
+ARG MISTRAL
+RUN echo "API_KEY=$MISTRAL" > /app/.env
 # ARG API_KEY
 # Install wget and required system dependencies
 RUN apt-get update && apt-get install -y wget && apt-get clean
