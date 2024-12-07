@@ -182,7 +182,7 @@ def query_rag(query):
         # Collect unique links
         unique_links = set()
         if not relevant_docs:
-            return '''I regret to inform you that I could not find relevant context for your query. However, I am equipped to provide information related to <a href="https://dl.acm.org/doi/10.1145/3597503">  
+            return '''I regret to inform you that I could not find relevant context for your query. However, I am equipped to provide information related to <a href="https://dl.acm.org/doi/10.1145/3597503" target="_blank" style="color : black">  
                     research papers</a>. Please do not hesitate to reach out with any inquiries regarding them.'''
                    
     
