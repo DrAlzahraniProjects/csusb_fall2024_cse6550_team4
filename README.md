@@ -58,6 +58,19 @@ Once the container is running, you can access the application at:
 - http://localhost:5004/team4/
 - http://127.0.0.1:5004/team4
 - Jupyter Notebook: http://localhost:6004/team4/jupyter
+
+# Jupyter Notebook Setup
+After cloning the repository, use the following command to navigate to the jupyter directory:
+```bash
+cd csusb_fall2024_cse6550_team4/jupyter
+```
+Run the Jupyter Notebook:
+In the terminal, type the following command to launch Jupyter Notebook:
+
+```bash
+jupyter notebook --port=6004
+```
+
 ### SQA for confusion matrix
 
 | **Answerable questions**                   |  **Unaswerable questions**                                                    |
